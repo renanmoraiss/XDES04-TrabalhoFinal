@@ -2,7 +2,7 @@
 
 ###
 
-<p align="left"><strong>Discentes:</strong>[@renanmoraiss](https://github.com/renanmoraiss),[@mvtheusdourado](https://github.com/mvtheusdourado),[@sabjoao](https://github.com/sabjoao),[@gabrielphillipy]((https://github.com/gabrielphillipy) e [@felipesouzx](https://github.com/felipesouzx).<br><strong>Docente:</strong> Adler Diniz de Souza</p>
+<p align="left"><strong>Discentes:</strong>[@renanmoraiss](https://github.com/renanmoraiss),[@mvtheusdourado](https://github.com/mvtheusdourado),[@sabjoao](https://github.com/sabjoao),[@gabrielphillipy](https://github.com/gabrielphillipy) e [@felipesouzx](https://github.com/felipesouzx).<br><strong>Docente:</strong> Adler Diniz de Souza</p>
 
 ###
 
