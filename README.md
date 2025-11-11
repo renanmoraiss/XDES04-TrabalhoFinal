@@ -64,8 +64,8 @@ sistema-biblioteca/
 │   │       ├── AutorForm.css
 │   │       └── ConsultarAutor.css
 │   ├── routes/              # Configuração de rotas
-│   │   ├── LivroRoutes.tsx
-│   │   └── AlunoRoutes.tsx
+│   │   ├── AlunoRoutes.tsx
+│   │   └── AutorRoutes.tsx
 │   ├── services/            # Serviços de armazenamento
 │   │   └── storage.ts       # Gerenciamento com localStorage
 │   ├── types/               # Definições de tipos TypeScript
