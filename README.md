@@ -1,31 +1,134 @@
-<h1 align="left">📚 Sistema de Biblioteca Escolar</h1>
+# Sistema de Biblioteca - Frontend
 
-###
+Sistema de gerenciamento de biblioteca desenvolvido em React com TypeScript, implementando os requisitos funcionais especificados.
 
-<p align="left"><strong>Discentes:</strong> @renanmoraiss, @mvtheusdourado, @sabjoao, @gabrielphillipy e @felipesouzx.<br><strong>Docente:</strong> Adler Diniz de Souza</p>
+## Funcionalidades Implementadas
 
-###
+### Alunos (RFS05-RFS08)
+- ✅ **Inserir Aluno (RFS05)**: Cadastro com validação de matrícula e email únicos
+- ✅ **Consultar Aluno (RFS06)**: Busca com filtros (nome, matrícula, status, pendências) e ordenação alfabética
+- ✅ **Alterar Aluno (RFS07)**: Edição de campos permitidos com histórico de alterações
+- ✅ **Excluir Aluno (RFS08)**: Exclusão lógica com validação de pendências
 
-<h2 align="left">📜 Descrição</h2>
+### Autores (RFS13-RFS16)
+- ✅ **Inserir Autor (RFS13)**: Cadastro sem validação
+- ✅ **Consultar Autor (RFS14)**: Busca com filtros (nome, nacionalidade) e ordenação alfabética
+- ✅ **Alterar Autor (RFS15)**: Edição de todos os campos com histórico de alterações
+- ✅ **Excluir Autor (RFS16)**: Exclusão lógica com validação de livros associados
 
-###
+## Tecnologias Utilizadas
 
-<p align="left">O Sistema de Biblioteca Escolar é uma ferramenta desenvolvida para gerenciar de forma organizada todo o acervo e as operações da biblioteca. O sistema permite controlar:<br><br><strong>• Usuários:</strong> cadastro e gerenciamento de alunos.<br><strong>• Livros:</strong> registro, categorização e acompanhamento do status de cada obra.<br><strong>• Empréstimos e reservas:</strong> controle das retiradas e devoluções de livros, além de gerenciamento de reservas.<br><strong>• Autores e editoras:</strong> cadastro e manutenção das informações relacionadas às obras.<br><br>Com essas funcionalidades, o sistema oferece uma visão completa da biblioteca, facilitando a administração e garantindo que todas as operações sejam registradas e monitoradas de forma eficiente.</p>
+- **React 18** - Biblioteca JavaScript para construção de interfaces
+- **TypeScript** - Superset do JavaScript com tipagem estática
+- **React Router DOM** - Roteamento para aplicações React
+- **Vite** - Build tool moderna e rápida
+- **CSS3** - Estilização com design moderno e responsivo
 
-###
+## Instalação
 
-<h2 align="left">🌐 Propósito</h2>
+1. Instale as dependências:
+```bash
+npm install
+```
 
-###
+2. Execute o servidor de desenvolvimento:
+```bash
+npm run dev
+```
 
-<p align="left">O sistema tem como objetivo organizar e simplificar a gestão da biblioteca escolar, permitindo que bibliotecários e administradores controlem de forma eficiente livros, usuários, empréstimos, reservas, autores e editoras.<br>Ele busca garantir que todas as operações da biblioteca sejam registradas, monitoradas e facilmente acessíveis, contribuindo para uma administração mais ágil, precisa e confiável.</p>
+3. Acesse no navegador:
+```
+http://localhost:5173
+```
 
-###
+## Estrutura do Projeto
 
-<h2 align="left">🛠 Funcionalidades</h2>
+```
+sistema-biblioteca/
+├── src/
+│   ├── components/          # Componentes reutilizáveis
+│   │   ├── Layout.tsx       # Layout principal com navegação
+│   │   └── Layout.css
+│   ├── pages/               # Páginas da aplicação
+│   │   ├── Home.tsx         # Página inicial
+│   │   ├── alunos/          # Páginas de gerenciamento de alunos
+│   │   │   ├── InserirAluno.tsx
+│   │   │   ├── ConsultarAluno.tsx
+│   │   │   ├── AlterarAluno.tsx
+│   │   │   ├── AlunoForm.css
+│   │   │   └── ConsultarAluno.css
+│   │   └── autores/          # Páginas de gerenciamento de autores
+│   │       ├── InserirAutor.tsx
+│   │       ├── ConsultarAutor.tsx
+│   │       ├── AlterarAutor.tsx
+│   │       ├── AutorForm.css
+│   │       └── ConsultarAutor.css
+│   ├── routes/              # Configuração de rotas
+│   │   ├── LivroRoutes.tsx
+│   │   └── AlunoRoutes.tsx
+│   ├── services/            # Serviços de armazenamento
+│   │   └── storage.ts       # Gerenciamento com localStorage
+│   ├── types/               # Definições de tipos TypeScript
+│   │   └── index.ts
+│   ├── utils/               # Funções utilitárias
+│   │   └── validations.ts   # Validações e formatações
+│   ├── App.tsx              # Componente principal
+│   ├── main.tsx             # Ponto de entrada
+│   └── index.css            # Estilos globais
+├── index.html
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
+```
 
-###
+## Validações Implementadas
 
-<p align="left"><strong>• Gerenciamento de alunos:</strong> cadastro, atualização e exclusão de estudantes.<br><strong>• Controle de livros:</strong> registro, edição e remoção de obras, incluindo informações como título, autor, editora e disponibilidade.<br><strong>• Cadastro de autores e editoras:</strong> armazenamento e manutenção dos dados das entidades relacionadas aos livros.<br><strong>• Empréstimos e devoluções:</strong> registro das movimentações de livros, com controle de datas e status de cada operação.<br><strong>• Sistema de reservas:</strong> permite que usuários reservem livros indisponíveis, garantindo prioridade no próximo empréstimo.<br><strong>• Geração de relatórios:</strong> visualização de informações sobre livros, estudantes e movimentações da biblioteca.</p>
+### Alunos
+- ✅ Nome obrigatório (máx. 150 caracteres)
+- ✅ Nº de Matrícula obrigatório (exatamente 4 caracteres)
+- ✅ Verificação de duplicidade de matrícula
+- ✅ E-mail institucional obrigatório e válido (máx. 100 caracteres)
+- ✅ Verificação de duplicidade de e-mail
+- ✅ Data de nascimento no formato DD/MM/AAAA
+- ✅ Telefone (11 dígitos)
+- ✅ Status padrão: "Ativo"
+- ✅ Data de cadastro: date (DD/MM/AAAA)
 
-###
+  ### Autores
+- ✅ Nome obrigatório (máx. 150 caracteres)
+- ✅ Nacionalidade (máx. 100 caracteres)
+- ✅ Data de nascimento no formato DD/MM/AAAA
+- ✅ Biografia (máx. 1000 caracteres)
+
+## Características do Design
+
+- 🎨 Interface moderna e limpa
+- 📱 Design responsivo (mobile-first)
+- ✨ Animações suaves
+- 🎯 Feedback visual claro para ações do usuário
+- 🔍 Busca e filtros intuitivos
+- 📋 Formulários bem estruturados com validação em tempo real
+
+## Armazenamento
+
+O sistema utiliza `localStorage` para persistência de dados. Em produção, isso seria substituído por chamadas a uma API REST.
+
+## Próximos Passos
+
+Para integração com backend:
+1. Substituir `storageService` por chamadas HTTP (fetch/axios)
+2. Implementar autenticação e controle de acesso
+3. Adicionar tratamento de erros de rede
+4. Implementar loading states
+5. Adicionar testes unitários e de integração
+
+## Scripts Disponíveis
+
+- `npm run dev` - Inicia servidor de desenvolvimento
+- `npm run build` - Gera build de produção
+- `npm run preview` - Preview do build de produção
+- `npm run lint` - Executa o linter
+
+## Licença
+
+Este projeto foi desenvolvido para fins educacionais.
