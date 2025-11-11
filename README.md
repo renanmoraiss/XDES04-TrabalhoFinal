@@ -2,7 +2,7 @@
 
 ###
 
-<p align="left"><strong>Discentes:</strong> Renan Morais, Matheus Dourado, Felipe Augusto, João Sabino e Gabriel Phillipy.<br><strong>Docente:</strong> Adler Diniz de Souza</p>
+<p align="left"><strong>Discentes:</strong> @renanmoraiss, @mvtheusdourado, @sabjoao, @gabrielphillipy e @felipesouzx.<br><strong>Docente:</strong> Adler Diniz de Souza</p>
 
 ###
 
