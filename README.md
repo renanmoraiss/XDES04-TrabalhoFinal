@@ -1,7 +1,5 @@
 # Sistema de Biblioteca - Frontend
 
-Sistema de gerenciamento de biblioteca desenvolvido em React com TypeScript, implementando os requisitos funcionais especificados.
-
 ## Funcionalidades Implementadas
 
 ### Alunos (RFS05-RFS08)
@@ -15,71 +13,6 @@ Sistema de gerenciamento de biblioteca desenvolvido em React com TypeScript, imp
 - ✅ **Consultar Autor (RFS14)**: Busca com filtros (nome, nacionalidade) e ordenação alfabética
 - ✅ **Alterar Autor (RFS15)**: Edição de todos os campos com histórico de alterações
 - ✅ **Excluir Autor (RFS16)**: Exclusão lógica com validação de livros associados
-
-## Tecnologias Utilizadas
-
-- **React 18** - Biblioteca JavaScript para construção de interfaces
-- **TypeScript** - Superset do JavaScript com tipagem estática
-- **React Router DOM** - Roteamento para aplicações React
-- **Vite** - Build tool moderna e rápida
-- **CSS3** - Estilização com design moderno e responsivo
-
-## Instalação
-
-1. Instale as dependências:
-```bash
-npm install
-```
-
-2. Execute o servidor de desenvolvimento:
-```bash
-npm run dev
-```
-
-3. Acesse no navegador:
-```
-http://localhost:5173
-```
-
-## Estrutura do Projeto
-
-```
-sistema-biblioteca/
-├── src/
-│   ├── components/          # Componentes reutilizáveis
-│   │   ├── Layout.tsx       # Layout principal com navegação
-│   │   └── Layout.css
-│   ├── pages/               # Páginas da aplicação
-│   │   ├── Home.tsx         # Página inicial
-│   │   ├── alunos/          # Páginas de gerenciamento de alunos
-│   │   │   ├── InserirAluno.tsx
-│   │   │   ├── ConsultarAluno.tsx
-│   │   │   ├── AlterarAluno.tsx
-│   │   │   ├── AlunoForm.css
-│   │   │   └── ConsultarAluno.css
-│   │   └── autores/          # Páginas de gerenciamento de autores
-│   │       ├── InserirAutor.tsx
-│   │       ├── ConsultarAutor.tsx
-│   │       ├── AlterarAutor.tsx
-│   │       ├── AutorForm.css
-│   │       └── ConsultarAutor.css
-│   ├── routes/              # Configuração de rotas
-│   │   ├── AlunoRoutes.tsx
-│   │   └── AutorRoutes.tsx
-│   ├── services/            # Serviços de armazenamento
-│   │   └── storage.ts       # Gerenciamento com localStorage
-│   ├── types/               # Definições de tipos TypeScript
-│   │   └── index.ts
-│   ├── utils/               # Funções utilitárias
-│   │   └── validations.ts   # Validações e formatações
-│   ├── App.tsx              # Componente principal
-│   ├── main.tsx             # Ponto de entrada
-│   └── index.css            # Estilos globais
-├── index.html
-├── package.json
-├── tsconfig.json
-└── vite.config.ts
-```
 
 ## Validações Implementadas
 
@@ -121,14 +54,3 @@ Para integração com backend:
 3. Adicionar tratamento de erros de rede
 4. Implementar loading states
 5. Adicionar testes unitários e de integração
-
-## Scripts Disponíveis
-
-- `npm run dev` - Inicia servidor de desenvolvimento
-- `npm run build` - Gera build de produção
-- `npm run preview` - Preview do build de produção
-- `npm run lint` - Executa o linter
-
-## Licença
-
-Este projeto foi desenvolvido para fins educacionais.
