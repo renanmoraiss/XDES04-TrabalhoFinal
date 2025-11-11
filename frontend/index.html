@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Sistema de Biblioteca Escolar - Alunos</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<header class="app-header">
+		<h1>Sistema de Biblioteca Escolar</h1>
+		<nav class="tabs">
+			<a href="#/home" id="tab-home" class="tab active">Principal</a>
+			<a href="#/aluno/cadastro" id="tab-cadastro" class="tab">Cadastro de Aluno</a>
+			<a href="#/aluno/consulta" id="tab-consulta" class="tab">Consulta de Alunos</a>
+			<a href="#/autor/cadastro" id="tab-autor-cadastro" class="tab">Cadastro de Autor</a>
+			<a href="#/autor/consulta" id="tab-autor-consulta" class="tab">Consulta de Autores</a>
+		</nav>
+	</header>
+
+	<main class="container">
+		<section id="view-home" class="view">
+			<h2>Bem-vindo ao Sistema de Biblioteca Escolar 📖</h2>
+			<p class="note">Selecione uma das opções abaixo para começar:</p>
+			<div class="home-actions">
+				<a class="btn" href="#/aluno/cadastro">Cadastrar Aluno</a>
+				<a class="btn" href="#/aluno/consulta">Consultar Aluno</a>
+				<a class="btn" href="#/autor/cadastro">Cadastrar Autor</a>
+				<a class="btn" href="#/autor/consulta">Consultar Autor</a>
+			</div>
+		</section>
+
+		<section id="view-cadastro" class="view">
+			<h2>Novo Aluno</h2>
+			<form id="form-cadastro" novalidate>
+				<div class="form-row">
+					<label for="nome">Nome *</label>
+					<input type="text" id="nome" name="nome" required placeholder="Ex.: Maria da Silva" maxlength="150">
+				</div>
+				<div class="form-row">
+					<label for="matricula">Nº de Matrícula *</label>
+					<input type="text" id="matricula" name="matricula" required inputmode="numeric" placeholder="Ex.: 2025" maxlength="4">
+				</div>
+				<div class="form-row">
+					<label for="email">E-mail Institucional *</label>
+					<input type="email" id="email" name="email" required placeholder="Ex.: maria.silva@escola.com.br" pattern="^[^\s@]+@escola\.com\.br$" title="Use um e-mail institucional que termine com @escola.com.br" maxlength="100">
+				</div>
+				<div class="form-row">
+					<label for="telefone">Telefone</label>
+					<input type="text" id="telefone" name="telefone" inputmode="numeric" placeholder="Ex.: 11988887777" maxlength="11">
+				</div>
+				<div class="form-row">
+					<label for="dataNascimento">Data de Nascimento *</label>
+					<input type="date" id="dataNascimento" name="dataNascimento" required>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Cadastrar</button>
+					<button type="reset" class="btn">Limpar</button>
+				</div>
+				<div id="cadastro-messages" class="messages" aria-live="polite"></div>
+			</form>
+			<p class="note">Observação: Status padrão é <strong>Ativo</strong>. Não é possível alterar no cadastro.</p>
+		</section>
+
+		<section id="view-consulta" class="view hidden">
+			<h2>Consulta de Alunos</h2>
+			<form id="form-filtro" class="filters">
+				<div class="form-row-filters">
+					<label for="filtroNome">Nome</label>
+					<input type="text" id="filtroNome" placeholder="Buscar por nome" maxlength="100">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroMatricula">Nº de Matrícula</label>
+					<input type="text" id="filtroMatricula" inputmode="numeric" placeholder="Ex.: 2025" maxlength="20">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroStatus">Status</label>
+					<select id="filtroStatus">
+						<option value="">Todos</option>
+						<option value="Ativo">Ativo</option>
+						<option value="Inativo">Inativo</option>
+						<option value="Suspenso">Suspenso</option>
+					</select>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Filtrar</button>
+					<button type="button" id="btnLimparFiltros" class="btn">Limpar</button>
+				</div>
+			</form>
+
+			<div id="lista-container">
+				<table class="table" id="tabela-alunos">
+					<thead>
+						<tr>
+							<th>Nome</th>
+							<th>Nº de Matrícula</th>
+							<th>E-mail Institucional</th>
+							<th>Telefone</th>
+							<th>Data de Nascimento</th>
+							<th>Status</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody id="tbody-alunos">
+						<tr><td colspan="7" class="empty">Nenhum aluno encontrado.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section id="view-autor-cadastro" class="view hidden">
+			<h2>Novo Autor</h2>
+			<form id="form-autor-cadastro" novalidate>
+				<div class="form-row">
+					<label for="autorNome">Nome *</label>
+					<input type="text" id="autorNome" required placeholder="Ex.: Machado de Assis" maxlength="150">
+				</div>
+				<div class="form-row">
+					<label for="autorNacionalidade">Nacionalidade</label>
+					<input type="text" id="autorNacionalidade" placeholder="Ex.: Brasileira" maxlength="100">
+				</div>
+				<div class="form-row">
+					<label for="autorNascimento">Data de Nascimento</label>
+					<input type="date" id="autorNascimento">
+				</div>
+				<div class="form-row">
+					<label for="autorBiografia">Biografia</label>
+					<textarea class="resumo-autor-placeholder" id="autorBiografia" rows="4" placeholder="Resumo biográfico" maxlength="1000"></textarea>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Cadastrar</button>
+					<button type="reset" class="btn">Limpar</button>
+				</div>
+				<div id="autor-cadastro-messages" class="messages" aria-live="polite"></div>
+			</form>
+		</section>
+
+		<section id="view-autor-consulta" class="view hidden">
+			<h2>Consulta de Autores</h2>
+			<form id="form-autor-filtro" class="filters">
+				<div class="form-row-filters">
+					<label for="filtroAutorNome">Nome</label>
+					<input type="text" id="filtroAutorNome" placeholder="Buscar por nome" maxlength="150">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroAutorNacionalidade">Nacionalidade</label>
+					<input type="text" id="filtroAutorNacionalidade" placeholder="Ex.: Brasileira" maxlength="100">
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Filtrar</button>
+					<button type="button" id="btnAutorLimparFiltros" class="btn">Limpar</button>
+				</div>
+			</form>
+
+			<div id="autor-lista-container">
+				<table class="table" id="tabela-autores">
+					<thead>
+						<tr>
+							<th>Nome</th>
+							<th>Nacionalidade</th>
+							<th>Nascimento</th>
+							<th>Biografia</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody id="tbody-autores">
+						<tr><td colspan="5" class="empty">Nenhum autor encontrado.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+	</main>
+
+	<!-- Modal de Edição de Aluno -->
+	<div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+		<div class="modal">
+			<h3 id="modal-title">Editar Aluno</h3>
+			<form id="form-edicao" novalidate>
+				<input type="hidden" id="edit-id">
+				<div class="grid">
+					<div class="form-row">
+						<label>Data de Cadastro</label>
+						<input type="text" id="edit-dataCadastro" disabled>
+						<small class="hint">Não pode ser alterada.</small>
+					</div>
+					<div class="form-row">
+						<label>Nº de Matrícula</label>
+						<input type="text" id="edit-matricula" disabled>
+						<small class="hint">Não pode ser alterado.</small>
+					</div>
+					<div class="form-row">
+						<label>E-mail Institucional</label>
+						<input type="email" id="edit-email" disabled>
+						<small class="hint">Não pode ser alterado.</small>
+					</div>
+				</div>
+				<div class="form-row">
+					<label for="edit-nome">Nome *</label>
+					<input type="text" id="edit-nome" required maxlength="150">
+				</div>
+				<div class="form-row">
+					<label for="edit-telefone">Telefone</label>
+					<input type="text" id="edit-telefone" inputmode="numeric" maxlength="11">
+				</div>
+				<div class="form-row">
+					<label for="edit-dataNascimento">Data de Nascimento *</label>
+					<input type="date" id="edit-dataNascimento" required>
+				</div>
+				<div class="form-row">
+					<label for="edit-status">Status *</label>
+					<select id="edit-status" required>
+						<option value="Ativo">Ativo</option>
+						<option value="Inativo">Inativo</option>
+						<option value="Suspenso">Suspenso</option>
+					</select>
+				</div>
+				<div id="edicao-messages" class="messages" aria-live="polite"></div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Salvar</button>
+					<button type="button" id="btnCancelarEdicao" class="btn">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Modal de Edição de Autor -->
+	<div id="modal-autor-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-autor-title">
+		<div class="modal">
+			<h3 id="modal-autor-title">Editar Autor</h3>
+			<form id="form-autor-edicao" novalidate>
+				<input type="hidden" id="edit-autor-id">
+				<div class="form-row">
+					<label for="edit-autor-nome">Nome *</label>
+					<input type="text" id="edit-autor-nome" required maxlength="150">
+				</div>
+				<div class="form-row">
+					<label for="edit-autor-nacionalidade">Nacionalidade</label>
+					<input type="text" id="edit-autor-nacionalidade" maxlength="100">
+				</div>
+				<div class="form-row">
+					<label for="edit-autor-nascimento">Data de Nascimento</label>
+					<input type="date" id="edit-autor-nascimento">
+				</div>
+				<div class="form-row">
+					<label for="edit-autor-biografia">Biografia</label>
+					<textarea class="resumo-autor-placeholder" id="edit-autor-biografia" rows="4" maxlength="1000"></textarea>
+				</div>
+				<div id="autor-edicao-messages" class="messages" aria-live="polite"></div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Salvar</button>
+					<button type="button" id="btnCancelarAutorEdicao" class="btn">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+	<script src="app.js"></script>
+</body>
+</html>
