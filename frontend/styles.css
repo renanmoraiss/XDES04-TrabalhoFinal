@@ -281,10 +281,12 @@ form {
 	padding: 10px 12px;
 	font-family: sans-serif;
 	outline: none;
+	resize: none;
+	color: var(--muted);
 }
 
 .resumo-autor-placeholder:focus {
 	border-color: #3a6ffd;
     box-shadow: 0 0 0 3px rgba(58, 111, 253, 0.2);
-	color: var(--text);
+	color: var(--muted);
 }
