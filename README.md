@@ -27,7 +27,7 @@
 - ✅ Status padrão: "Ativo"
 - ✅ Data de cadastro: date (DD/MM/AAAA)
 
-  ### Autores
+### Autores
 - ✅ Nome obrigatório (máx. 150 caracteres)
 - ✅ Nacionalidade (máx. 100 caracteres)
 - ✅ Data de nascimento no formato DD/MM/AAAA
