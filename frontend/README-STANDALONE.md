@@ -5,7 +5,7 @@ Esta é uma versão standalone do sistema que funciona **sem necessidade de inst
 ## 🚀 Como Usar
 
 ### Opção 1: Abrir Diretamente
-1. Navegue até a pasta `C:\Users\Master\sistema-biblioteca`
+1. Navegue até a pasta `C:\Users\Master\frontend`
 2. Abra o arquivo `index-standalone.html` no seu navegador
 3. Pronto! O sistema está funcionando
 
@@ -14,31 +14,31 @@ Para evitar problemas com CORS, você pode usar um servidor HTTP simples:
 
 **Com Python (se instalado):**
 ```bash
-cd C:\Users\Master\sistema-biblioteca
+cd C:\Users\Master\frontend
 python -m http.server 8000
 ```
 Depois acesse: `http://localhost:8000/index-standalone.html`
 
 **Com Node.js (se instalado):**
 ```bash
-cd C:\Users\Master\sistema-biblioteca
+cd C:\Users\Master\frontend
 npx http-server -p 8000
 ```
 Depois acesse: `http://localhost:8000/index-standalone.html`
 
 ## 📋 Funcionalidades Implementadas
 
-### ✅ Livros (RFS01-RFS04)
-- **Inserir Livro**: Formulário completo com validação de ISBN, autores multivalorados, gêneros múltiplos
-- **Consultar Livro**: Busca com filtros (título, autor, ISBN, gênero) e ordenação alfabética
-- **Alterar Livro**: Edição de todos os campos com validação
-- **Excluir Livro**: Exclusão lógica
+### Alunos (RFS05-RFS08)
+- ✅ **Inserir Aluno (RFS05)**: Cadastro com validação de matrícula e email únicos
+- ✅ **Consultar Aluno (RFS06)**: Busca com filtros (nome, matrícula, status, pendências) e ordenação alfabética
+- ✅ **Alterar Aluno (RFS07)**: Edição de campos permitidos com histórico de alterações
+- ✅ **Excluir Aluno (RFS08)**: Exclusão lógica com validação de pendências
 
-### ✅ Alunos (RFS05-RFS08)
-- **Inserir Aluno**: Cadastro com validação de matrícula e email únicos
-- **Consultar Aluno**: Busca com filtros (nome, matrícula, status, pendências) e ordenação alfabética
-- **Alterar Aluno**: Edição de campos permitidos (exceto matrícula, email e data de cadastro)
-- **Excluir Aluno**: Exclusão lógica com validação de pendências
+### Autores (RFS13-RFS16)
+- ✅ **Inserir Autor (RFS13)**: Cadastro sem validação
+- ✅ **Consultar Autor (RFS14)**: Busca com filtros (nome, nacionalidade) e ordenação alfabética
+- ✅ **Alterar Autor (RFS15)**: Edição de todos os campos com histórico de alterações
+- ✅ **Excluir Autor (RFS16)**: Exclusão lógica com validação de livros associados
 
 ## 🎨 Características
 
@@ -58,7 +58,7 @@ Os dados são salvos no **localStorage** do navegador. Isso significa:
 ## 🔧 Estrutura de Arquivos
 
 ```
-sistema-biblioteca/
+frontend/
 ├── index-standalone.html  ← Arquivo principal (abra este!)
 ├── app.js                  ← Lógica JavaScript completa
 └── README-STANDALONE.md    ← Este arquivo
@@ -99,5 +99,4 @@ Para usar em produção, você pode:
 
 ---
 
-**Desenvolvido conforme especificações dos Requisitos Funcionais RFS01-RFS08**
-
+**Desenvolvido conforme especificações dos Requisitos Funcionais RFS05-RFS08 & RFS13-RFS16**
