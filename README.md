@@ -2,17 +2,17 @@
 
 ## Funcionalidades Implementadas
 
-### Alunos (RFS05-RFS08)
-- ✅ **Inserir Aluno (RFS05)**: Cadastro com validação de matrícula e email únicos
-- ✅ **Consultar Aluno (RFS06)**: Busca com filtros (nome, matrícula, status, pendências) e ordenação alfabética
-- ✅ **Alterar Aluno (RFS07)**: Edição de campos permitidos com histórico de alterações
-- ✅ **Excluir Aluno (RFS08)**: Exclusão lógica com validação de pendências
+### Alunos (RFS01-RFS04)
+- ✅ **Inserir Aluno (RFS01)**: Cadastro com validação de matrícula e email únicos
+- ✅ **Consultar Aluno (RFS02)**: Busca com filtros (nome, matrícula, status, pendências) e ordenação alfabética
+- ✅ **Alterar Aluno (RFS03)**: Edição de campos permitidos com histórico de alterações
+- ✅ **Excluir Aluno (RFS04)**: Exclusão lógica com validação de pendências
 
-### Autores (RFS13-RFS16)
-- ✅ **Inserir Autor (RFS13)**: Cadastro sem validação
-- ✅ **Consultar Autor (RFS14)**: Busca com filtros (nome, nacionalidade) e ordenação alfabética
-- ✅ **Alterar Autor (RFS15)**: Edição de todos os campos com histórico de alterações
-- ✅ **Excluir Autor (RFS16)**: Exclusão lógica com validação de livros associados
+### Autores (RFS05-RFS08)
+- ✅ **Inserir Autor (RFS05)**: Cadastro sem validação
+- ✅ **Consultar Autor (RFS06)**: Busca com filtros (nome, nacionalidade) e ordenação alfabética
+- ✅ **Alterar Autor (RFS07)**: Edição de todos os campos com histórico de alterações
+- ✅ **Excluir Autor (RFS08)**: Exclusão lógica com validação de livros associados
 
 ## Validações Implementadas
 
