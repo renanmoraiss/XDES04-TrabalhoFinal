@@ -46,7 +46,7 @@ function formatDateToISO(dateStr) {
 
 function formatDateToDisplay(iso) {
 	if (!iso) return '';
-	// iso yyyy-mm-dd -> dd/mm/yyyy
+	// yyyy-mm-dd -> dd/mm/yyyy
 	const [y, m, d] = iso.split('-');
 	return `${d}/${m}/${y}`;
 }
