@@ -51,6 +51,57 @@ function formatDateToDisplay(iso) {
 	return `${d}/${m}/${y}`;
 }
 
+function formatPhone(value) {
+	const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+	const len = digits.length;
+	if (!len) return '';
+	if (len < 3) return `(${digits}`;
+	if (len < 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+	const prefix = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}`;
+	const suffix = digits.slice(7);
+	return suffix ? `${prefix}-${suffix}` : prefix;
+}
+
+function applyPhoneMask(input) {
+	const digits = input.value.replace(/\D/g, '').slice(0, 11);
+	input.dataset.digits = digits;
+	input.value = formatPhone(digits);
+}
+
+function enableEnterNavigation(form, validateForm) {
+	if (!form) return;
+	form.addEventListener('keydown', (event) => {
+		if (event.key !== 'Enter') return;
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) return;
+		if (target.tagName === 'TEXTAREA') return;
+		if (target.closest('button') || target.getAttribute('type') === 'submit') return;
+		const focusables = Array.from(form.querySelectorAll('input:not([type="hidden"]):not([disabled]):not([readonly]), select:not([disabled]), textarea:not([disabled])'))
+			.filter(el => el instanceof HTMLElement && el.tagName !== 'BUTTON' && el.offsetParent !== null);
+		const index = focusables.indexOf(target);
+		if (index === -1) return;
+		event.preventDefault();
+		const next = focusables[index + 1];
+		if (next) {
+			next.focus();
+			if (next instanceof HTMLInputElement) next.select?.();
+		} else {
+			// Está no último campo
+			if (validateForm && validateForm()) {
+				// Se o formulário está válido, submete
+				const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+				if (submitBtn instanceof HTMLElement) {
+					submitBtn.click();
+				}
+			} else {
+				// Caso contrário, apenas foca no botão
+				const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+				if (submitBtn instanceof HTMLElement) submitBtn.focus();
+			}
+		}
+	});
+}
+
 // Validações
 const nameRegex = /^[\p{L}\p{M}\s]+$/u; // letras (unicode) e espaços
 const digitsRegex = /^\d+$/;
@@ -145,6 +196,31 @@ function setupCadastro() {
 	const dataNascimento = document.getElementById('dataNascimento');
 	const messages = document.getElementById('cadastro-messages');
 
+	// Função de validação para o formulário de cadastro de aluno
+	function validateAlunoForm() {
+		const vNome = nome.value.trim();
+		const vMatricula = matricula.value.trim();
+		const vEmail = email.value.trim().toLowerCase();
+		const vTelefoneDigits = telefone.value.replace(/\D+/g, '');
+		const vNascimento = dataNascimento.value;
+
+		// Valida campos obrigatórios
+		if (!vNome || !nameRegex.test(vNome)) return false;
+		if (!vMatricula || !digitsRegex.test(vMatricula) || vMatricula.length !== 4) return false;
+		if (!vEmail || !emailRegex.test(vEmail)) return false;
+		if (vTelefoneDigits && vTelefoneDigits.length !== 11) return false;
+		if (!vNascimento) return false;
+
+		// Verifica unicidade (sem mostrar mensagem de erro)
+		const alunos = loadAlunos();
+		if (alunos.some(a => a.matricula === vMatricula)) return false;
+		if (alunos.some(a => a.email === vEmail)) return false;
+
+		return true;
+	}
+
+	enableEnterNavigation(form, validateAlunoForm);
+
 	// Restrições de entrada
 	nome.addEventListener('input', () => {
 		// permite apenas letras e espaços (remove outros)
@@ -152,13 +228,13 @@ function setupCadastro() {
 		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
 		if (raw !== cleaned) nome.value = cleaned;
 	});
-	[matricula, telefone].forEach(input => {
-		input.addEventListener('input', () => {
-			const raw = input.value;
-			const cleaned = raw.replace(/\D+/g, '');
-			if (raw !== cleaned) input.value = cleaned;
-		});
+	matricula.addEventListener('input', () => {
+		const raw = matricula.value;
+		const cleaned = raw.replace(/\D+/g, '');
+		if (raw !== cleaned) matricula.value = cleaned;
 	});
+	telefone.addEventListener('input', () => applyPhoneMask(telefone));
+	telefone.addEventListener('blur', () => applyPhoneMask(telefone));
 
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();
@@ -167,7 +243,7 @@ function setupCadastro() {
 		const vNome = nome.value.trim();
 		const vMatricula = matricula.value.trim();
 		const vEmail = email.value.trim().toLowerCase();
-		const vTelefone = telefone.value.trim();
+		const vTelefoneDigits = telefone.value.replace(/\D+/g, '');
 		const vNascimento = dataNascimento.value;
 
 		// Validações
@@ -186,8 +262,8 @@ function setupCadastro() {
 			email.focus();
 			return;
 		}
-		if (vTelefone) {
-			if (!digitsRegex.test(vTelefone) || vTelefone.length !== 11) {
+		if (vTelefoneDigits) {
+			if (vTelefoneDigits.length !== 11) {
 				showMessage(messages, 'Telefone deve conter apenas números e ter exatamente 11 dígitos.', 'error');
 				telefone.focus();
 				return;
@@ -219,7 +295,7 @@ function setupCadastro() {
 			nome: vNome,
 			matricula: vMatricula,
 			email: vEmail,
-			telefone: vTelefone,
+			telefone: vTelefoneDigits,
 			dataNascimento: formatDateToISO(vNascimento),
 			status: 'Ativo',
 			dataCadastro: new Date().toISOString().slice(0, 10) // yyyy-mm-dd
@@ -228,8 +304,12 @@ function setupCadastro() {
 		alunos.push(novoAluno);
 		saveAlunos(alunos);
 		form.reset();
+		delete telefone.dataset.digits;
 		showMessage(messages, 'Aluno cadastrado com sucesso!', 'success');
 		updateHomeStats();
+		setTimeout(() => {
+			window.location.hash = '#/aluno/consulta';
+		}, 300);
 	});
 }
 
@@ -274,7 +354,7 @@ function renderTabela() {
 			<td>${escapeHtml(a.nome)}</td>
 			<td>${escapeHtml(a.matricula)}</td>
 			<td>${escapeHtml(a.email)}</td>
-			<td>${escapeHtml(a.telefone || '')}</td>
+			<td>${escapeHtml(formatPhone(a.telefone))}</td>
 			<td>${escapeHtml(formatDateToDisplay(a.dataNascimento))}</td>
 			<td>${escapeHtml(a.status)}</td>
 			<td>
@@ -325,7 +405,9 @@ function abrirModalEdicao(id) {
 	document.getElementById('edit-matricula').value = aluno.matricula;
 	document.getElementById('edit-email').value = aluno.email;
 	document.getElementById('edit-nome').value = aluno.nome;
-	document.getElementById('edit-telefone').value = aluno.telefone || '';
+	const telefoneInput = document.getElementById('edit-telefone');
+	telefoneInput.value = formatPhone(aluno.telefone || '');
+	applyPhoneMask(telefoneInput);
 	document.getElementById('edit-dataNascimento').value = aluno.dataNascimento;
 	document.getElementById('edit-status').value = aluno.status;
 	showMessage(document.getElementById('edicao-messages'), '', 'success');
@@ -354,17 +436,14 @@ function setupModalEdicao() {
 		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
 		if (raw !== cleaned) nome.value = cleaned;
 	});
-	telefone.addEventListener('input', () => {
-		const raw = telefone.value;
-		const cleaned = raw.replace(/\D+/g, '');
-		if (raw !== cleaned) telefone.value = cleaned;
-	});
+	telefone.addEventListener('input', () => applyPhoneMask(telefone));
+	telefone.addEventListener('blur', () => applyPhoneMask(telefone));
 
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();
 
 		const vNome = nome.value.trim();
-		const vTelefone = telefone.value.trim();
+		const vTelefoneDigits = telefone.value.replace(/\D+/g, '');
 		const vNascimento = dataNascimento.value;
 		const vStatus = status.value;
 		const id = document.getElementById('edit-id').value;
@@ -374,8 +453,8 @@ function setupModalEdicao() {
 			nome.focus();
 			return;
 		}
-		if (vTelefone) {
-			if (!digitsRegex.test(vTelefone) || vTelefone.length !== 11) {
+		if (vTelefoneDigits) {
+			if (vTelefoneDigits.length !== 11) {
 				showMessage(messages, 'Telefone deve conter apenas números e ter exatamente 11 dígitos.', 'error');
 				telefone.focus();
 				return;
@@ -402,7 +481,7 @@ function setupModalEdicao() {
 		alunos[idx] = {
 			...alunos[idx],
 			nome: vNome,
-			telefone: vTelefone,
+			telefone: vTelefoneDigits,
 			dataNascimento: vNascimento,
 			status: vStatus
 		};
@@ -493,6 +572,23 @@ function setupAutorCadastro() {
 
 	if (!form) return;
 
+	// Função de validação para o formulário de cadastro de autor
+	function validateAutorForm() {
+		const vNome = nome.value.trim();
+		const vNacionalidade = nacionalidade.value.trim();
+		const vBiografia = biografia.value.trim();
+
+		// Valida campo obrigatório
+		if (!vNome || !nameRegex.test(vNome)) return false;
+		// Valida campos opcionais se preenchidos
+		if (vNacionalidade && !nameRegex.test(vNacionalidade)) return false;
+		if (vBiografia && !lettersAndBasicPunctRegex.test(vBiografia)) return false;
+
+		return true;
+	}
+
+	enableEnterNavigation(form, validateAutorForm);
+
 	nome.addEventListener('input', () => {
 		const raw = nome.value;
 		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
@@ -547,6 +643,9 @@ function setupAutorCadastro() {
 		form.reset();
 		showMessage(messages, 'Autor cadastrado com sucesso!', 'success');
 		updateHomeStats();
+		setTimeout(() => {
+			window.location.hash = '#/autor/consulta';
+		}, 300);
 	});
 }
 
@@ -727,5 +826,3 @@ function excluirAutor(id) {
 	renderTabelaAutores();
 	updateHomeStats();
 }
-
-

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Login - Sistema de Biblioteca Escolar</title>
+	<link rel="stylesheet" href="styles.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+	<style>
+		/* Estilos específicos da tela de login (reutilizando a paleta) */
+		.page-login {
+			min-height: 100vh;
+			display: grid;
+			place-items: center;
+			background: var(--bg);
+			padding: 24px;
+		}
+		.login-card {
+			width: 100%;
+			max-width: 420px;
+		}
+		.brand {
+			text-align: center;
+			margin-bottom: 16px;
+		}
+		.brand h1 {
+			margin: 0;
+			font-size: 22px;
+			font-family: sans-serif;
+			color: var(--text);
+		}
+		.brand p {
+			margin: 6px 0 0;
+			color: var(--muted);
+			font-family: sans-serif;
+			font-size: 14px;
+		}
+		.login-actions {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			margin-top: 8px;
+		}
+		.helper {
+			color: var(--muted);
+			font-size: 12px;
+		}
+	</style>
+	<script>
+		const VALID_USERNAME = "bibliotecario";
+		const VALID_PASSWORD = "441325";
+
+	document.addEventListener("DOMContentLoaded", () => {
+			const form = document.getElementById("form-login");
+			const messages = document.getElementById("login-messages");
+			const userInput = document.getElementById("usuario");
+			const passInput = document.getElementById("senha");
+		const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+
+		form.addEventListener("keydown", (event) => {
+			if (event.key !== "Enter") return;
+			const target = event.target;
+			if (!(target instanceof HTMLElement)) return;
+			const fields = [userInput, passInput];
+			const index = fields.indexOf(target);
+			if (index === -1) return;
+			event.preventDefault();
+			const next = fields[index + 1];
+			if (next) {
+				next.focus();
+				if (next instanceof HTMLInputElement) next.select?.();
+				return;
+			}
+			const allFilled = fields.every(field => field.value.trim());
+			if (!allFilled) {
+				const firstEmpty = fields.find(field => !field.value.trim());
+				if (firstEmpty) firstEmpty.focus();
+				return;
+			}
+			submitBtn?.click();
+		});
+
+			form.addEventListener("submit", (e) => {
+				e.preventDefault();
+				messages.textContent = "";
+				messages.className = "messages";
+
+				const username = userInput.value.trim();
+				const password = passInput.value;
+
+				if (!username || !password) {
+					messages.textContent = "Preencha usuário e senha.";
+					messages.classList.add("error");
+					return;
+				}
+				if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+					messages.textContent = "Login efetuado com sucesso!";
+					messages.classList.add("success");
+					setTimeout(() => {
+						window.location.href = "index.html";
+					}, 600);
+				} else {
+					messages.textContent = "Credenciais inválidas do bibliotecário.";
+					messages.classList.add("error");
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+	<div class="page-login">
+		<div class="login-card">
+			<div class="brand">
+				<h1>Sistema de Biblioteca Escolar</h1>
+				<p>Acesse com as credenciais do bibliotecário</p>
+			</div>
+			<form id="form-login" novalidate>
+				<div class="form-row">
+					<label for="usuario">Usuário *</label>
+					<input type="text" id="usuario" name="usuario" required placeholder="Seu usuário" maxlength="80" autocomplete="username">
+				</div>
+				<div class="form-row">
+					<label for="senha">Senha *</label>
+					<input type="password" id="senha" name="senha" required placeholder="Sua senha" maxlength="80" autocomplete="current-password">
+				</div>
+				<div class="login-actions">
+					<button type="submit" class="btn primary">Entrar</button>
+					<span class="helper"><i class="fa-solid fa-lock"></i></span>
+				</div>
+				<div id="login-messages" class="messages" aria-live="polite"></div>
+			</form>
+		</div>
+	</div>
+</body>
+</html>

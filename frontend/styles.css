@@ -46,6 +46,7 @@ html, body {
 }
 .app-header .header-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .app-header .header-left { display: flex; align-items: center; gap: 12px; position: relative; }
+.app-header .header-right { display: flex; align-items: center; }
 .role-badge {
     background: #213060;
     color: #cfe0ff;
