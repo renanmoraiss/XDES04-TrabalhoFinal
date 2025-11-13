@@ -1,11 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 :root {
 	--bg: #0b1020;
 	--panel: #121933;
 	--panel-2: #162042;
 	--text: #e8ecf1;
 	--muted: #a7b0c4;
-	--primary: #3a5bdc;     /* azul mais escuro */
-	--primary-2: #2a49c7;   /* hover do primário */
+	--primary: #3a5bdc;
+	--primary-2: #2a49c7;
 	--danger: #ff6b6b;
 	--success: #2ecc71;
 	--warning: #f1c40f;
@@ -19,7 +22,7 @@ html, body {
 	padding: 0;
 	background: var(--bg);
 	color: var(--text);
-	font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+	font-family: Poppins, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 	line-height: 1.35;
 }
 
@@ -56,7 +59,6 @@ html, body {
     font-weight: 700;
     font-size: 16px;
     letter-spacing: .06em;
-    font-family: sans-serif;
 }
 .burger {
 	background: none;
@@ -90,7 +92,7 @@ html, body {
 
 .sub-header { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; }
 .sub-links { display: flex; gap: 10px; }
-.sub-link { color: var(--muted); text-decoration: none; font-size: 14px; padding: 6px 10px; border-radius: 8px; border: 1px solid transparent; font-family: sans-serif; }
+.sub-link { color: var(--muted); text-decoration: none; font-size: 14px; padding: 6px 10px; border-radius: 8px; border: 1px solid transparent; }
 .sub-link:hover { color: var(--text); border-color: #2f3a66; background: rgba(255,255,255,0.02); }
 
 .container {
@@ -106,13 +108,13 @@ h2 {
 }
 
 .hero { margin: 10px 0 18px; text-align: center; }
-.hero-title { margin: 0; font-size: 28px; font-family: sans-serif; }
-.hero-subtitle { margin: 6px 0 0; color: var(--muted); font-family: sans-serif }
+.hero-title { margin: 0; font-size: 28px; }
+.hero-subtitle { margin: 6px 0 0; color: var(--muted); }
 
 .stats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin: 18px 0 22px; }
 .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 10px 24px var(--shadow); }
-.stat-label { color: var(--muted); font-size: 13px; font-family: sans-serif; }
-.stat-value { margin-top: 6px; font-size: 28px; font-weight: 800; color: var(--text); font-family: sans-serif; }
+.stat-label { color: var(--muted); font-size: 13px; }
+.stat-value { margin-top: 6px; font-size: 28px; font-weight: 800; color: var(--text); }
 
 /* Seções por entidade na home */
 .entities { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
@@ -122,7 +124,6 @@ h2 {
     font-size: 22px;
     color: var(--text);
     font-weight: 900;
-    font-family: sans-serif;
 }
 .entity-actions { 
 	margin-top: 15px; 
@@ -234,7 +235,6 @@ form {
 	cursor: pointer;
 	transition: 0.15s ease;
 	text-decoration: none;
-	font-family: sans-serif;
 }
 .btn:hover { border-color: #2f3a66; }
 .btn.primary {
@@ -242,7 +242,6 @@ form {
 	border-color: #2a49c7;
 	color: white;
 	text-decoration: none;
-	font-family: sans-serif;
 }
 .btn.primary:hover { background: var(--primary-2); }
 .btn.danger {
@@ -350,7 +349,6 @@ form {
 	border: 1px solid var(--border);
 	border-radius: 10px;
 	padding: 10px 12px;
-	font-family: sans-serif;
 	outline: none;
 	resize: none;
 	color: var(--muted);
