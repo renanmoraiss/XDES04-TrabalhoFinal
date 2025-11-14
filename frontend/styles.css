@@ -186,7 +186,6 @@ form {
 	border-radius: 10px;
 	outline: none;
 	transition: 0.15s ease;
-	touch-action: none;
 }
 
 .form-row-filters input, .form-row-filters select {
@@ -197,19 +196,16 @@ form {
 	border-radius: 10px;
 	outline: none;
 	transition: 0.15s ease;
-	touch-action: none;
 }
 
 .form-row input:focus, .form-row select:focus {
 	border-color: #3a6ffd;
 	box-shadow: 0 0 0 3px rgba(58,111,253,0.2);
-	touch-action: none;
 }
 
 .form-row-filters input:focus, .form-row-filters select:focus {
 	border-color: #3a6ffd;
 	box-shadow: 0 0 0 3px rgba(58,111,253,0.2);
-	touch-action: none;
 }
 
 .form-row .hint {
