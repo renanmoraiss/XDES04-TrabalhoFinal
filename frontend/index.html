@@ -3,624 +3,586 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Sistema de Biblioteca Escolar - Alunos</title>
+	<title>Login - Sistema de Biblioteca</title>
 	<link rel="stylesheet" href="styles.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			padding: 0;
+			font-family: 'Poppins', sans-serif;
+			overflow-x: hidden;
+		}
+
+		.login-container {
+			display: flex;
+			min-height: 100vh;
+			width: 100%;
+		}
+
+		.login-left {
+			flex: 1;
+			background: var(--bg);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			padding: 40px;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.login-left::before {
+			content: '';
+			position: absolute;
+			top: -50%;
+			right: -20%;
+			width: 600px;
+			height: 600px;
+			background: radial-gradient(circle, rgba(58, 91, 220, 0.15) 0%, transparent 70%);
+			border-radius: 50%;
+		}
+
+		.login-left::after {
+			content: '';
+			position: absolute;
+			bottom: -30%;
+			left: -10%;
+			width: 500px;
+			height: 500px;
+			background: radial-gradient(circle, rgba(42, 73, 199, 0.12) 0%, transparent 70%);
+			border-radius: 50%;
+		}
+
+		.login-form-wrapper {
+			width: 100%;
+			max-width: 420px;
+			position: relative;
+			z-index: 1;
+		}
+
+		.brand {
+			text-align: center;
+			margin-bottom: 40px;
+		}
+
+		.brand h1 {
+			margin: 0 0 12px 0;
+			font-size: 34px;
+			color: #ffffff;
+			font-weight: 700;
+			letter-spacing: -0.8px;
+			text-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+			line-height: 1.2;
+		}
+
+		.brand p {
+			margin: 0;
+			color: rgba(232, 236, 241, 0.9);
+			font-size: 16px;
+			font-weight: 400;
+			letter-spacing: 0.2px;
+		}
+
+		.login-form {
+			background: rgba(255, 255, 255, 0.98);
+			backdrop-filter: blur(10px);
+			border-radius: 20px;
+			padding: 36px;
+			box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
+		}
+
+		.form-row {
+			margin-bottom: 22px;
+		}
+
+		.form-row label {
+			display: block;
+			margin-bottom: 10px;
+			font-size: 14px;
+			font-weight: 600;
+			color: #1e293b;
+			letter-spacing: 0.1px;
+		}
+
+		.form-row input {
+			width: 100%;
+			padding: 14px 16px;
+			border: 2px solid #e5e7eb;
+			border-radius: 12px;
+			font-size: 15px;
+			color: #1a1a1a;
+			background: #ffffff;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			font-family: 'Poppins', sans-serif;
+		}
+
+		.form-row input:focus {
+			outline: none;
+			border-color: #3a5bdc;
+			box-shadow: 0 0 0 4px rgba(58, 91, 220, 0.12), 0 2px 8px rgba(58, 91, 220, 0.1);
+			transform: translateY(-1px);
+		}
+
+		.form-row input:hover {
+			border-color: #cbd5e1;
+		}
+
+		.form-row input::placeholder {
+			color: #999;
+		}
+
+		.password-wrapper {
+			position: relative;
+		}
+
+		.password-wrapper input {
+			padding-right: 40px;
+		}
+
+		.password-toggle {
+			position: absolute;
+			right: 12px;
+			top: 50%;
+			transform: translateY(-50%);
+			background: none;
+			border: none;
+			color: #666;
+			cursor: pointer;
+			font-size: 14px;
+			padding: 4px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: color 0.3s ease;
+			z-index: 2;
+			width: 24px;
+			height: 24px;
+		}
+
+		.password-toggle:hover {
+			color: #3a5bdc;
+		}
+
+		.password-toggle:focus {
+			outline: none;
+			color: #3a5bdc;
+		}
+
+		.password-toggle i {
+			font-size: 14px;
+		}
+
+		.submit-button {
+			width: 100%;
+			padding: 16px;
+			background: linear-gradient(135deg, #3a5bdc 0%, #2a49c7 100%);
+			color: #ffffff;
+			border: none;
+			border-radius: 12px;
+			font-size: 16px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			font-family: 'Poppins', sans-serif;
+			margin-top: 12px;
+			box-shadow: 0 4px 14px rgba(58, 91, 220, 0.4), 0 2px 4px rgba(58, 91, 220, 0.2);
+			letter-spacing: 0.3px;
+		}
+
+		.submit-button:hover {
+			background: linear-gradient(135deg, #2a49c7 0%, #1e3a9e 100%);
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px rgba(58, 91, 220, 0.5), 0 4px 8px rgba(58, 91, 220, 0.3);
+		}
+
+		.submit-button:active {
+			transform: translateY(0);
+			box-shadow: 0 2px 8px rgba(58, 91, 220, 0.4);
+		}
+
+		.login-messages {
+			margin-top: 16px;
+			min-height: 20px;
+			font-size: 14px;
+			text-align: center;
+			font-weight: 500;
+		}
+
+		.login-messages.error {
+			color: #e74c3c;
+		}
+
+		.login-messages.success {
+			color: #27ae60;
+		}
+
+		.login-right {
+			flex: 1;
+			background: rgba(255, 255, 255, 0.98);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 60px 40px;
+			position: relative;
+		}
+
+		.login-right::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: 
+				radial-gradient(circle at 20% 30%, rgba(58, 91, 220, 0.08) 0%, transparent 50%),
+				radial-gradient(circle at 80% 70%, rgba(42, 73, 199, 0.06) 0%, transparent 50%);
+		}
+
+		.library-image-wrapper {
+			position: relative;
+			z-index: 1;
+			max-width: 600px;
+			width: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.library-svg {
+			width: 100%;
+			height: auto;
+			max-width: 100%;
+		}
+
+		/* Responsive */
+		@media (max-width: 968px) {
+			.login-container {
+				flex-direction: column;
+			}
+
+			.login-left {
+				padding: 32px 24px;
+				min-height: 50vh;
+			}
+
+			.login-right {
+				padding: 40px 24px;
+				min-height: 50vh;
+			}
+
+			.brand {
+				margin-bottom: 32px;
+			}
+
+			.brand h1 {
+				font-size: 30px;
+			}
+
+			.brand p {
+				font-size: 15px;
+			}
+
+			.login-form {
+				padding: 28px;
+			}
+
+			.library-image-wrapper {
+				max-width: 600px;
+			}
+		}
+
+		@media (max-width: 480px) {
+			.login-left {
+				padding: 24px 20px;
+			}
+
+			.login-right {
+				padding: 24px 20px;
+			}
+
+			.login-form {
+				padding: 20px;
+			}
+
+			.brand {
+				margin-bottom: 24px;
+			}
+
+			.brand h1 {
+				font-size: 26px;
+			}
+
+			.brand p {
+				font-size: 14px;
+			}
+
+			.login-right {
+				padding: 30px 20px;
+			}
+
+			.library-image-wrapper {
+				max-width: 100%;
+			}
+
+			.login-form {
+				padding: 28px;
+			}
+		}
+	</style>
+	<script>
+		const VALID_USERNAME = "bibliotecario";
+		const VALID_PASSWORD = "441325";
+
+		document.addEventListener("DOMContentLoaded", () => {
+			const form = document.getElementById("form-login");
+			const messages = document.getElementById("login-messages");
+			const userInput = document.getElementById("usuario");
+			const passInput = document.getElementById("senha");
+			const passwordToggle = document.getElementById("password-toggle");
+			const submitBtn = form.querySelector('button[type="submit"]');
+
+			// Toggle password visibility
+			passwordToggle.addEventListener("click", (e) => {
+				e.preventDefault();
+				const type = passInput.getAttribute("type") === "password" ? "text" : "password";
+				passInput.setAttribute("type", type);
+				
+				const icon = passwordToggle.querySelector("i");
+				if (type === "password") {
+					icon.classList.remove("fa-eye");
+					icon.classList.add("fa-eye-slash");
+				} else {
+					icon.classList.remove("fa-eye-slash");
+					icon.classList.add("fa-eye");
+				}
+			});
+
+			// Enter key navigation
+			form.addEventListener("keydown", (event) => {
+				if (event.key !== "Enter") return;
+				const target = event.target;
+				if (!(target instanceof HTMLElement)) return;
+				const fields = [userInput, passInput];
+				const index = fields.indexOf(target);
+				if (index === -1) return;
+				event.preventDefault();
+				const next = fields[index + 1];
+				if (next) {
+					next.focus();
+					if (next instanceof HTMLInputElement) next.select?.();
+					return;
+				}
+				const allFilled = fields.every(field => field.value.trim());
+				if (!allFilled) {
+					const firstEmpty = fields.find(field => !field.value.trim());
+					if (firstEmpty) firstEmpty.focus();
+					return;
+				}
+				submitBtn?.click();
+			});
+
+			// Form submission
+			form.addEventListener("submit", (e) => {
+				e.preventDefault();
+				messages.textContent = "";
+				messages.className = "login-messages";
+
+				const username = userInput.value.trim();
+				const password = passInput.value;
+
+				if (!username || !password) {
+					messages.textContent = "Preencha usuário e senha.";
+					messages.classList.add("error");
+					return;
+				}
+				if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+					messages.textContent = "Login efetuado com sucesso!";
+					messages.classList.add("success");
+					setTimeout(() => {
+						window.location.href = "index.html";
+					}, 600);
+				} else {
+					messages.textContent = "Credenciais inválidas do bibliotecário.";
+					messages.classList.add("error");
+				}
+			});
+		});
+	</script>
 </head>
 <body>
-	<header class="app-header">
-		<div class="header-row">
-			<div class="header-left">
-				<span class="role-badge">Colégio Atlas</span>
-				<button type="button" class="burger" id="burger-button" aria-expanded="false" aria-controls="burger-menu" aria-label="Abrir menu de navegação">
-					<i class="fa-solid fa-bars"></i>
-				</button>
-				<nav id="burger-menu" class="burger-menu" aria-hidden="true">
-					<a href="#/home" id="tab-home" class="tab active">Principal</a>
-					<a href="#/aluno/cadastro" id="tab-cadastro" class="tab">Cadastro de Aluno</a>
-					<a href="#/aluno/consulta" id="tab-consulta" class="tab">Consulta de Aluno</a>
-					<a href="#/autor/cadastro" id="tab-autor-cadastro" class="tab">Cadastro de Autor</a>
-					<a href="#/autor/consulta" id="tab-autor-consulta" class="tab">Consulta de Autor</a>
-					<a href="#/editora/cadastro" id="tab-editora-cadastro" class="tab">Cadastro de Editora</a>
-					<a href="#/editora/consulta" id="tab-editora-consulta" class="tab">Consulta de Editora</a>
-					<a href="#/livro/cadastro" id="tab-livro-cadastro" class="tab">Cadastro de Livro</a>
-					<a href="#/livro/consulta" id="tab-livro-consulta" class="tab">Consulta de Livro</a>
-				</nav>
-			</div>
-			<div class="header-right">
-				<a href="login.html" class="btn link">Sair</a>
+	<div class="login-container">
+		<div class="login-left">
+			<div class="login-form-wrapper">
+				<div class="brand">
+					<h1>Sistema de Biblioteca</h1>
+					<p>Acesse com as credenciais do bibliotecário</p>
+				</div>
+				<form id="form-login" class="login-form" novalidate>
+					<div class="form-row">
+						<label for="usuario">Usuário *</label>
+						<input type="text" id="usuario" name="usuario" required placeholder="Seu usuário" maxlength="80" autocomplete="username">
+					</div>
+					<div class="form-row">
+						<label for="senha">Senha *</label>
+						<div class="password-wrapper">
+							<input type="password" id="senha" name="senha" required placeholder="Sua senha" maxlength="80" autocomplete="current-password">
+							<button type="button" id="password-toggle" class="password-toggle" aria-label="Mostrar senha">
+								<i class="fa-solid fa-eye-slash"></i>
+							</button>
+						</div>
+					</div>
+					<button type="submit" class="submit-button">Entrar</button>
+					<div id="login-messages" class="login-messages" aria-live="polite"></div>
+				</form>
 			</div>
 		</div>
-		<div class="sub-header">
-			<div class="sub-links">
-				<a href="#/home" class="sub-link" id="sub-dashboard">Principal</a>
-				<a href="#/instituicao" class="sub-link" id="tab-instituicao">Sobre</a>
-			</div>
-		</div>
-	</header>
+		<div class="login-right">
+			<div class="library-image-wrapper">
+				<svg class="library-svg" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+					<defs>
+						<linearGradient id="deviceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+						</linearGradient>
+						<linearGradient id="screenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#3a5bdc;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#2a49c7;stop-opacity:1" />
+						</linearGradient>
+						<linearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#3a5bdc;stop-opacity:0.4" />
+							<stop offset="100%" style="stop-color:#2a49c7;stop-opacity:0.2" />
+						</linearGradient>
+						<linearGradient id="bookGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+							<stop offset="0%" style="stop-color:#3a5bdc;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#2a49c7;stop-opacity:1" />
+						</linearGradient>
+						<linearGradient id="bookGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+							<stop offset="0%" style="stop-color:#4f6fec;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#3a5bdc;stop-opacity:1" />
+						</linearGradient>
+						<filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+							<feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+							<feOffset dx="0" dy="4" result="offsetblur"/>
+							<feComponentTransfer>
+								<feFuncA type="linear" slope="0.3"/>
+							</feComponentTransfer>
+							<feMerge>
+								<feMergeNode/>
+								<feMergeNode in="SourceGraphic"/>
+							</feMerge>
+						</filter>
+					</defs>
 
-	<main class="container">
-		<section id="view-home" class="view">
-			<div class="hero">
-				<h2 class="hero-title">Sistema de Biblioteca Escolar</h2>
-				<p class="hero-subtitle">Bem-vindo(a) ao Sistema para Controle de Acervo Literário</p>
-			</div>
+					<!-- Tablet/Smartphone -->
+					<g transform="translate(250, 80)">
+						<!-- Glow effect atrás do dispositivo -->
+						<ellipse cx="140" cy="200" rx="120" ry="180" fill="url(#glowGradient)" opacity="0.6"/>
+						
+						<!-- Corpo do dispositivo -->
+						<rect x="0" y="0" width="280" height="400" rx="24" fill="url(#deviceGradient)" filter="url(#shadow)"/>
+						<rect x="8" y="8" width="264" height="384" rx="20" fill="#0f172a"/>
+						
+						<!-- Tela com interface de biblioteca -->
+						<rect x="16" y="16" width="248" height="368" rx="16" fill="url(#screenGradient)" opacity="0.98"/>
+						
+						<!-- Header da tela -->
+						<rect x="16" y="16" width="248" height="50" rx="16" fill="rgba(255, 255, 255, 0.1)"/>
+						<circle cx="45" cy="41" r="8" fill="rgba(255, 255, 255, 0.3)"/>
+						<rect x="60" y="36" width="80" height="10" rx="2" fill="rgba(255, 255, 255, 0.4)"/>
+						<rect x="200" y="36" width="40" height="10" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						
+						<!-- Ícone de livro na tela -->
+						<g transform="translate(130, 120)">
+							<!-- Livro aberto -->
+							<path d="M -25 -20 L 0 -25 L 25 -20 L 25 20 L 0 25 L -25 20 Z" fill="rgba(255, 255, 255, 0.9)" opacity="0.9"/>
+							<path d="M 0 -25 L 25 -20 L 25 20 L 0 25 Z" fill="rgba(255, 255, 255, 0.7)" opacity="0.9"/>
+							<line x1="0" y1="-25" x2="0" y2="25" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+							<circle cx="2" cy="0" r="4" fill="rgba(255, 255, 255, 0.8)"/>
+							<!-- Páginas -->
+							<line x1="-22" y1="-15" x2="22" y2="-15" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+							<line x1="-22" y1="-8" x2="22" y2="-8" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+							<line x1="-22" y1="-1" x2="22" y2="-1" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+							<line x1="-22" y1="6" x2="22" y2="6" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+							<line x1="-22" y1="13" x2="22" y2="13" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+						</g>
+						
+						<!-- Cards de livros na tela -->
+						<rect x="30" y="220" width="100" height="60" rx="8" fill="rgba(255, 255, 255, 0.15)"/>
+						<rect x="35" y="225" width="90" height="8" rx="2" fill="rgba(255, 255, 255, 0.4)"/>
+						<rect x="35" y="238" width="70" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						<rect x="35" y="248" width="80" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						
+						<rect x="150" y="220" width="100" height="60" rx="8" fill="rgba(255, 255, 255, 0.15)"/>
+						<rect x="155" y="225" width="90" height="8" rx="2" fill="rgba(255, 255, 255, 0.4)"/>
+						<rect x="155" y="238" width="70" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						<rect x="155" y="248" width="80" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						
+						<rect x="30" y="300" width="100" height="60" rx="8" fill="rgba(255, 255, 255, 0.15)"/>
+						<rect x="35" y="305" width="90" height="8" rx="2" fill="rgba(255, 255, 255, 0.4)"/>
+						<rect x="35" y="318" width="70" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						<rect x="35" y="328" width="80" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						
+						<!-- Botão home -->
+						<rect x="110" y="370" width="60" height="6" rx="3" fill="rgba(255, 255, 255, 0.3)"/>
+					</g>
 
-			<div class="entities">
-				<div class="entity-card">
-					<h3 class="entity-title">Alunos</h3>
-					<div class="stat-card">
-						<div class="stat-label">Alunos cadastrados</div>
-						<div class="stat-value" id="stat-total-alunos">0</div>
-					</div>
-					<div class="entity-actions">
-						<a class="btn primary" href="#/aluno/cadastro">Cadastrar Aluno</a>
-						<a class="btn" href="#/aluno/consulta">Consultar Aluno</a>
-					</div>
-				</div>
-				<div class="entity-card">
-					<h3 class="entity-title">Autores</h3>
-					<div class="stat-card">
-						<div class="stat-label">Autores cadastrados</div>
-						<div class="stat-value" id="stat-total-autores">0</div>
-					</div>
-					<div class="entity-actions">
-						<a class="btn primary" href="#/autor/cadastro">Cadastrar Autor</a>
-						<a class="btn" href="#/autor/consulta">Consultar Autor</a>
-					</div>
-				</div>
-				<div class="entity-card">
-					<h3 class="entity-title">Editoras</h3>
-					<div class="stat-card">
-						<div class="stat-label">Editoras cadastradas</div>
-						<div class="stat-value" id="stat-total-editoras">0</div>
-					</div>
-					<div class="entity-actions">
-						<a class="btn primary" href="#/editora/cadastro">Cadastrar Editora</a>
-						<a class="btn" href="#/editora/consulta">Consultar Editora</a>
-					</div>
-				</div>
-				<div class="entity-card">
-					<h3 class="entity-title">Livros</h3>
-					<div class="stat-card">
-						<div class="stat-label">Livros cadastrados</div>
-						<div class="stat-value" id="stat-total-livros">0</div>
-					</div>
-					<div class="entity-actions">
-						<a class="btn primary" href="#/livro/cadastro">Cadastrar Livro</a>
-						<a class="btn" href="#/livro/consulta">Consultar Livro</a>
-					</div>
-				</div>
-			</div>
-		</section>
+					<!-- Livros físicos ao redor -->
+					<!-- Livro 1 -->
+					<g transform="translate(100, 200)">
+						<rect x="0" y="0" width="45" height="70" rx="3" fill="url(#bookGrad1)" filter="url(#shadow)" opacity="0.9"/>
+						<rect x="3" y="3" width="39" height="64" fill="#4f6fec"/>
+						<line x1="6" y1="15" x2="39" y2="15" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="25" x2="39" y2="25" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="35" x2="39" y2="35" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="45" x2="39" y2="45" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+					</g>
 
-		<section id="view-cadastro" class="view">
-			<h2>Cadastrar Aluno</h2>
-			<div class="history-actions">
-				<button type="button" class="btn" data-history-entity="aluno" data-history-type="edit">Histórico de Edições</button>
-				<button type="button" class="btn" data-history-entity="aluno" data-history-type="delete">Histórico de Exclusões</button>
-			</div>
-			<form id="form-cadastro" novalidate>
-				<div class="form-row">
-					<label for="nome">Nome *</label>
-					<input type="text" id="nome" name="nome" required placeholder="Ex.: Maria da Silva" maxlength="150">
-				</div>
-				<div class="form-row">
-					<label for="matricula">Nº de Matrícula *</label>
-					<input type="text" id="matricula" name="matricula" required inputmode="numeric" placeholder="Ex.: 2025" maxlength="4">
-				</div>
-				<div class="form-row">
-					<label for="email">E-mail Institucional *</label>
-					<input type="email" id="email" name="email" required placeholder="Ex.: maria.silva@atlas.com.br" pattern="^[^\s@]+@escola\.com\.br$" title="Use um e-mail institucional que termine com @atlas.com.br" maxlength="100">
-				</div>
-				<div class="form-row">
-					<label for="telefone">Telefone</label>
-					<input type="text" id="telefone" name="telefone" inputmode="numeric" placeholder="Ex.: (11) 98888-7777" maxlength="15">
-				</div>
-				<div class="form-row">
-					<label for="dataNascimento">Data de Nascimento *</label>
-					<input type="date" id="dataNascimento" name="dataNascimento" required max="2025-12-31">
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Cadastrar</button>
-					<button type="reset" class="btn">Limpar</button>
-				</div>
-				<div id="cadastro-messages" class="messages" aria-live="polite"></div>
-			</form>
-			<p class="note">Observação: Status padrão é <strong>Ativo</strong>. Não é possível alterar no cadastro.</p>
-		</section>
+					<!-- Livro 2 -->
+					<g transform="translate(660, 180)">
+						<rect x="0" y="0" width="45" height="70" rx="3" fill="url(#bookGrad2)" filter="url(#shadow)" opacity="0.9"/>
+						<rect x="3" y="3" width="39" height="64" fill="#4f6fec"/>
+						<line x1="6" y1="15" x2="39" y2="15" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="25" x2="39" y2="25" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="35" x2="39" y2="35" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+					</g>
 
-		<section id="view-consulta" class="view hidden">
-			<h2>Consulta de Alunos</h2>
-			<div class="history-actions">
-				<button type="button" class="btn" data-history-entity="aluno" data-history-type="edit">Histórico de Edições</button>
-				<button type="button" class="btn" data-history-entity="aluno" data-history-type="delete">Histórico de Exclusões</button>
-			</div>
-			<form id="form-filtro" class="filters">
-				<div class="form-row-filters">
-					<label for="filtroNome">Nome</label>
-					<input type="text" id="filtroNome" placeholder="Buscar por nome" maxlength="100">
-				</div>
-				<div class="form-row-filters">
-					<label for="filtroMatricula">Nº de Matrícula</label>
-					<input type="text" id="filtroMatricula" inputmode="numeric" placeholder="Ex.: 2025" maxlength="4">
-				</div>
-				<div class="form-row-filters">
-					<label for="filtroStatus">Status</label>
-					<select id="filtroStatus">
-						<option value="">Todos</option>
-						<option value="Ativo">Ativo</option>
-						<option value="Inativo">Inativo</option>
-						<option value="Suspenso">Suspenso</option>
-					</select>
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Filtrar</button>
-					<button type="button" id="btnLimparFiltros" class="btn">Limpar</button>
-				</div>
-			</form>
+					<!-- Livro 3 (menor) -->
+					<g transform="translate(80, 320)">
+						<rect x="0" y="0" width="35" height="55" rx="2" fill="url(#bookGrad1)" filter="url(#shadow)" opacity="0.85"/>
+						<rect x="2" y="2" width="31" height="51" fill="#4f6fec"/>
+						<line x1="5" y1="12" x2="30" y2="12" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+						<line x1="5" y1="20" x2="30" y2="20" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+					</g>
 
-			<div id="lista-container">
-				<table class="table" id="tabela-alunos">
-					<thead>
-						<tr>
-							<th>Nome</th>
-							<th>Nº de Matrícula</th>
-							<th>E-mail Institucional</th>
-							<th>Telefone</th>
-							<th>Data de Nascimento</th>
-							<th>Status</th>
-							<th>Ações</th>
-						</tr>
-					</thead>
-					<tbody id="tbody-alunos">
-						<tr><td colspan="7" class="empty">Nenhum aluno encontrado.</td></tr>
-					</tbody>
-				</table>
-			</div>
-		</section>
+					<!-- Livro 4 (menor) -->
+					<g transform="translate(680, 310)">
+						<rect x="0" y="0" width="35" height="55" rx="2" fill="url(#bookGrad2)" filter="url(#shadow)" opacity="0.85"/>
+						<rect x="2" y="2" width="31" height="51" fill="#4f6fec"/>
+						<line x1="5" y1="12" x2="30" y2="12" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+						<line x1="5" y1="20" x2="30" y2="20" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+					</g>
 
-		<section id="view-instituicao" class="view hidden">
-			<h2>Sobre a Biblioteca</h2>
-			<p class="note">A biblioteca escolar é um espaço de aprendizagem, incentivo à leitura e apoio pedagógico, promovendo o acesso à informação e ao conhecimento.</p>
-		</section>
+					<!-- Livro 5 (em perspectiva) -->
+					<g transform="translate(50, 450)">
+						<rect x="0" y="0" width="40" height="60" rx="2" fill="url(#bookGrad1)" filter="url(#shadow)" opacity="0.8"/>
+						<rect x="2" y="2" width="36" height="56" fill="#4f6fec"/>
+						<line x1="5" y1="15" x2="35" y2="15" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+					</g>
 
-		<section id="view-autor-cadastro" class="view hidden">
-			<h2>Cadastrar Autor</h2>
-			<div class="history-actions">
-				<button type="button" class="btn" data-history-entity="autor" data-history-type="edit">Histórico de Edições</button>
-				<button type="button" class="btn" data-history-entity="autor" data-history-type="delete">Histórico de Exclusões</button>
-			</div>
-			<form id="form-autor-cadastro" novalidate>
-				<div class="form-row">
-					<label for="autorNome">Nome *</label>
-					<input type="text" id="autorNome" required placeholder="Ex.: Machado de Assis" maxlength="150">
-				</div>
-				<div class="form-row">
-					<label for="autorNacionalidade">Nacionalidade</label>
-					<input type="text" id="autorNacionalidade" placeholder="Ex.: Brasileira" maxlength="100">
-				</div>
-				<div class="form-row">
-					<label for="autorNascimento">Data de Nascimento</label>
-					<input type="date" id="autorNascimento" max="2025-12-31">
-				</div>
-				<div class="form-row">
-					<label for="autorBiografia">Biografia</label>
-					<textarea class="resumo-autor-placeholder" id="autorBiografia" rows="4" placeholder="Resumo biográfico" maxlength="1000"></textarea>
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Cadastrar</button>
-					<button type="reset" class="btn">Limpar</button>
-				</div>
-				<div id="autor-cadastro-messages" class="messages" aria-live="polite"></div>
-			</form>
-		</section>
-
-		<section id="view-autor-consulta" class="view hidden">
-			<h2>Consulta de Autores</h2>
-			<div class="history-actions">
-				<button type="button" class="btn" data-history-entity="autor" data-history-type="edit">Histórico de Edições</button>
-				<button type="button" class="btn" data-history-entity="autor" data-history-type="delete">Histórico de Exclusões</button>
-			</div>
-			<form id="form-autor-filtro" class="filters">
-				<div class="form-row-filters">
-					<label for="filtroAutorNome">Nome</label>
-					<input type="text" id="filtroAutorNome" placeholder="Buscar por nome" maxlength="150">
-				</div>
-				<div class="form-row-filters">
-					<label for="filtroAutorNacionalidade">Nacionalidade</label>
-					<input type="text" id="filtroAutorNacionalidade" placeholder="Ex.: Brasileira" maxlength="100">
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Filtrar</button>
-					<button type="button" id="btnAutorLimparFiltros" class="btn">Limpar</button>
-				</div>
-			</form>
-
-			<div id="autor-lista-container">
-				<table class="table" id="tabela-autores">
-					<thead>
-						<tr>
-							<th>Nome</th>
-							<th>Nacionalidade</th>
-							<th>Data de Nascimento</th>
-							<th>Biografia</th>
-							<th>Ações</th>
-						</tr>
-					</thead>
-					<tbody id="tbody-autores">
-						<tr><td colspan="5" class="empty">Nenhum autor encontrado.</td></tr>
-					</tbody>
-				</table>
-			</div>
-		</section>
-
-		<section id="view-editora-cadastro" class="view hidden">
-			<h2>Cadastrar Editora</h2>
-			<div class="history-actions">
-				<button type="button" class="btn" data-history-entity="editora" data-history-type="edit">Histórico de Edições</button>
-				<button type="button" class="btn" data-history-entity="editora" data-history-type="delete">Histórico de Exclusões</button>
-			</div>
-			<form id="form-editora-cadastro" novalidate>
-				<div class="form-row">
-					<label for="editoraNome">Nome *</label>
-					<input type="text" id="editoraNome" name="editoraNome" required placeholder="Ex.: Editora Atlas" maxlength="100">
-				</div>
-				<div class="form-row">
-					<label for="editoraTelefone">Telefone de Contato *</label>
-					<input type="text" id="editoraTelefone" name="editoraTelefone" required inputmode="numeric" placeholder="Ex.: 1234 567 8901" maxlength="13">
-				</div>
-				<div class="form-row">
-					<label for="editoraEndereco">Endereço Comercial</label>
-					<input type="text" id="editoraEndereco" name="editoraEndereco" placeholder="Ex.: Rua das Flores, 123" maxlength="200">
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Cadastrar</button>
-					<button type="reset" class="btn">Limpar</button>
-				</div>
-				<div id="editora-cadastro-messages" class="messages" aria-live="polite"></div>
-			</form>
-			<p class="note">Observação: Status padrão é <strong>Ativa</strong>. Não é possível alterar no cadastro.</p>
-		</section>
-
-		<section id="view-editora-consulta" class="view hidden">
-			<h2>Consulta de Editoras</h2>
-			<div class="history-actions">
-				<button type="button" class="btn" data-history-entity="editora" data-history-type="edit">Histórico de Edições</button>
-				<button type="button" class="btn" data-history-entity="editora" data-history-type="delete">Histórico de Exclusões</button>
-			</div>
-			<form id="form-editora-filtro" class="filters">
-				<div class="form-row-filters">
-					<label for="filtroEditoraNome">Nome</label>
-					<input type="text" id="filtroEditoraNome" placeholder="Buscar por nome" maxlength="100">
-				</div>
-				<div class="form-row-filters">
-					<label for="filtroEditoraStatus">Status</label>
-					<select id="filtroEditoraStatus">
-						<option value="">Todos</option>
-						<option value="Ativa">Ativa</option>
-						<option value="Inativa">Inativa</option>
-					</select>
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Filtrar</button>
-					<button type="button" id="btnEditoraLimparFiltros" class="btn">Limpar</button>
-				</div>
-			</form>
-
-			<div id="editora-lista-container">
-				<table class="table" id="tabela-editoras">
-					<thead>
-						<tr>
-							<th>Nome</th>
-							<th>Telefone de Contato</th>
-							<th>Endereço Comercial</th>
-							<th>Status</th>
-							<th>Ações</th>
-						</tr>
-					</thead>
-					<tbody id="tbody-editoras">
-						<tr><td colspan="5" class="empty">Nenhuma editora encontrada.</td></tr>
-					</tbody>
-				</table>
-			</div>
-		</section>
-
-		<section id="view-livro-cadastro" class="view hidden">
-			<h2>Cadastrar Livro</h2>
-			<div class="history-actions">
-				<button type="button" class="btn" data-history-entity="livro" data-history-type="edit">Histórico de Edições</button>
-				<button type="button" class="btn" data-history-entity="livro" data-history-type="delete">Histórico de Exclusões</button>
-			</div>
-			<form id="form-livro-cadastro" novalidate>
-				<div class="form-row">
-					<label for="livroTitulo">Título *</label>
-					<input type="text" id="livroTitulo" name="livroTitulo" required maxlength="100" placeholder="Ex.: O Guia do Mochileiro das Galáxias">
-				</div>
-				<div class="form-row">
-					<label for="livroAutores">Autor(es) *</label>
-					<select id="livroAutores" name="livroAutores" multiple required size="5">
-						<option value="" disabled>Carregando autores...</option>
-					</select>
-					<div class="selected-chips" id="livroAutoresChips" data-empty="Nenhum autor selecionado"></div>
-					<small class="hint">Selecione um ou mais autores.</small>
-				</div>
-				<div class="form-row">
-					<label for="livroIsbn">ISBN *</label>
-					<input type="text" id="livroIsbn" name="livroIsbn" required maxlength="17" placeholder="XXX-XX-XXXX-XXX-X">
-				</div>
-				<div class="form-row">
-					<label for="livroGeneros">Gênero(s) *</label>
-					<select id="livroGeneros" name="livroGeneros" multiple required size="6">
-					</select>
-					<div class="selected-chips" id="livroGenerosChips" data-empty="Nenhum gênero selecionado"></div>
-					<small class="hint">Selecione pelo menos um gênero.</small>
-				</div>
-				<div class="form-row">
-					<label for="livroExemplares">Exemplares *</label>
-					<input type="text" id="livroExemplares" name="livroExemplares" required inputmode="numeric" maxlength="4" placeholder="Quantidade disponível">
-				</div>
-				<div class="form-row">
-					<label for="livroEditoras">Editora(s)</label>
-					<select id="livroEditoras" name="livroEditoras" multiple size="4">
-						<option value="">Carregando editoras...</option>
-					</select>
-					<div class="selected-chips" id="livroEditorasChips" data-empty="Nenhuma editora selecionada"></div>
-					<small class="hint">Opcional. Selecione uma ou mais editoras.</small>
-				</div>
-				<div class="grid">
-					<div class="form-row">
-						<label for="livroAno">Ano de Publicação</label>
-						<input type="text" id="livroAno" name="livroAno" placeholder="Ex.: 2024" maxlength="4" inputmode="numeric">
-					</div>
-					<div class="form-row">
-						<label for="livroLocalizacao">Localização Física</label>
-						<input type="text" id="livroLocalizacao" name="livroLocalizacao" maxlength="100" placeholder="Ex.: Estante B - Prateleira 3">
-					</div>
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Cadastrar</button>
-					<button type="reset" class="btn">Limpar</button>
-				</div>
-				<div id="livro-cadastro-messages" class="messages" aria-live="polite"></div>
-			</form>
-		</section>
-
-		<section id="view-livro-consulta" class="view hidden">
-			<h2>Consulta de Livros</h2>
-			<div class="history-actions">
-				<button type="button" class="btn" data-history-entity="livro" data-history-type="edit">Histórico de Edições</button>
-				<button type="button" class="btn" data-history-entity="livro" data-history-type="delete">Histórico de Exclusões</button>
-			</div>
-			<form id="form-livro-filtro" class="filters">
-				<div class="form-row-filters">
-					<label for="filtroLivroTitulo">Título</label>
-					<input type="text" id="filtroLivroTitulo" placeholder="Buscar por título" maxlength="100">
-				</div>
-				<div class="form-row-filters">
-					<label for="filtroLivroAutor">Autor</label>
-					<input type="text" id="filtroLivroAutor" placeholder="Buscar por autor" maxlength="150">
-				</div>
-				<div class="form-row-filters">
-					<label for="filtroLivroIsbn">ISBN</label>
-					<input type="text" id="filtroLivroIsbn" placeholder="XXX-XX-XXXX-XXX-X" maxlength="17">
-				</div>
-				<div class="form-row-filters">
-					<label for="filtroLivroGenero">Gênero</label>
-					<select id="filtroLivroGenero">
-						<option value="">Todos</option>
-					</select>
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Filtrar</button>
-					<button type="button" id="btnLivroLimparFiltros" class="btn">Limpar</button>
-				</div>
-			</form>
-
-			<div id="livro-lista-container">
-				<table class="table" id="tabela-livros">
-					<thead>
-						<tr>
-							<th>Título</th>
-							<th>Autor(es)</th>
-							<th>ISBN</th>
-							<th>Gênero(s)</th>
-							<th>Exemplares</th>
-							<th>Editora(s)</th>
-							<th>Ano</th>
-							<th>Localização</th>
-							<th>Ações</th>
-						</tr>
-					</thead>
-					<tbody id="tbody-livros">
-						<tr><td colspan="9" class="empty">Nenhum livro encontrado.</td></tr>
-					</tbody>
-				</table>
-			</div>
-		</section>
-	</main>
-
-	<!-- Modal de Edição de Aluno -->
-	<div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-		<div class="modal">
-			<h3 id="modal-title">Editar Aluno</h3>
-			<form id="form-edicao" novalidate>
-				<input type="hidden" id="edit-id">
-				<div class="grid">
-					<div class="form-row">
-						<label>Data de Cadastro</label>
-						<input type="text" id="edit-dataCadastro" disabled>
-						<small class="hint">Não pode ser alterada.</small>
-					</div>
-					<div class="form-row">
-						<label>Nº de Matrícula</label>
-						<input type="text" id="edit-matricula" disabled>
-						<small class="hint">Não pode ser alterado.</small>
-					</div>
-					<div class="form-row">
-						<label>E-mail Institucional</label>
-						<input type="email" id="edit-email" disabled>
-						<small class="hint">Não pode ser alterado.</small>
-					</div>
-				</div>
-				<div class="form-row">
-					<label for="edit-nome">Nome *</label>
-					<input type="text" id="edit-nome" required maxlength="150">
-				</div>
-				<div class="form-row">
-					<label for="edit-telefone">Telefone</label>
-					<input type="text" id="edit-telefone" inputmode="numeric" maxlength="15">
-				</div>
-				<div class="form-row">
-					<label for="edit-dataNascimento">Data de Nascimento *</label>
-					<input type="date" id="edit-dataNascimento" required max="2025-12-31">
-				</div>
-				<div class="form-row">
-					<label for="edit-status">Status *</label>
-					<select id="edit-status" required>
-						<option value="Ativo">Ativo</option>
-						<option value="Inativo">Inativo</option>
-						<option value="Suspenso">Suspenso</option>
-					</select>
-				</div>
-				<div id="edicao-messages" class="messages" aria-live="polite"></div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Salvar</button>
-					<button type="button" id="btnCancelarEdicao" class="btn">Cancelar</button>
-				</div>
-			</form>
-		</div>
-	</div>
-
-	<!-- Modal de Edição de Autor -->
-	<div id="modal-autor-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-autor-title">
-		<div class="modal">
-			<h3 id="modal-autor-title">Editar Autor</h3>
-			<form id="form-autor-edicao" novalidate>
-				<input type="hidden" id="edit-autor-id">
-				<div class="form-row">
-					<label for="edit-autor-nome">Nome *</label>
-					<input type="text" id="edit-autor-nome" required maxlength="150">
-				</div>
-				<div class="form-row">
-					<label for="edit-autor-nacionalidade">Nacionalidade</label>
-					<input type="text" id="edit-autor-nacionalidade" maxlength="100">
-				</div>
-				<div class="form-row">
-					<label for="edit-autor-nascimento">Data de Nascimento</label>
-					<input type="date" id="edit-autor-nascimento" max="2025-12-31">
-				</div>
-				<div class="form-row">
-					<label for="edit-autor-biografia">Biografia</label>
-					<textarea class="resumo-autor-placeholder" id="edit-autor-biografia" rows="4" maxlength="1000"></textarea>
-				</div>
-				<div id="autor-edicao-messages" class="messages" aria-live="polite"></div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Salvar</button>
-					<button type="button" id="btnCancelarAutorEdicao" class="btn">Cancelar</button>
-				</div>
-			</form>
-		</div>
-	</div>
-
-	<!-- Modal de Edição de Editora -->
-	<div id="modal-editora-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-editora-title">
-		<div class="modal">
-			<h3 id="modal-editora-title">Editar Editora</h3>
-			<form id="form-editora-edicao" novalidate>
-				<input type="hidden" id="edit-editora-id">
-				<div class="form-row">
-					<label for="edit-editora-nome">Nome *</label>
-					<input type="text" id="edit-editora-nome" required maxlength="100">
-				</div>
-				<div class="form-row">
-					<label for="edit-editora-telefone">Telefone de Contato *</label>
-					<input type="text" id="edit-editora-telefone" required inputmode="numeric" maxlength="13">
-				</div>
-				<div class="form-row">
-					<label for="edit-editora-endereco">Endereço Comercial</label>
-					<input type="text" id="edit-editora-endereco" maxlength="200">
-				</div>
-				<div class="form-row">
-					<label for="edit-editora-status">Status *</label>
-					<select id="edit-editora-status" required>
-						<option value="Ativa">Ativa</option>
-						<option value="Inativa">Inativa</option>
-					</select>
-				</div>
-				<div id="editora-edicao-messages" class="messages" aria-live="polite"></div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Salvar</button>
-					<button type="button" id="btnCancelarEditoraEdicao" class="btn">Cancelar</button>
-				</div>
-			</form>
-		</div>
-	</div>
-
-	<!-- Modal de Edição de Livro -->
-	<div id="modal-livro-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-livro-title">
-		<div class="modal">
-			<h3 id="modal-livro-title">Editar Livro</h3>
-			<form id="form-livro-edicao" novalidate>
-				<input type="hidden" id="edit-livro-id">
-				<div class="form-row">
-					<label for="edit-livro-titulo">Título *</label>
-					<input type="text" id="edit-livro-titulo" required maxlength="100">
-				</div>
-				<div class="form-row">
-					<label for="edit-livro-autores">Autor(es) *</label>
-					<select id="edit-livro-autores" multiple required size="5"></select>
-					<div class="selected-chips" id="editLivroAutoresChips" data-empty="Nenhum autor selecionado"></div>
-				</div>
-				<div class="form-row">
-					<label for="edit-livro-isbn">ISBN *</label>
-					<input type="text" id="edit-livro-isbn" required maxlength="17">
-				</div>
-				<div class="form-row">
-					<label for="edit-livro-generos">Gênero(s) *</label>
-					<select id="edit-livro-generos" multiple required size="6"></select>
-					<div class="selected-chips" id="editLivroGenerosChips" data-empty="Nenhum gênero selecionado"></div>
-				</div>
-				<div class="form-row">
-					<label for="edit-livro-exemplares">Exemplares *</label>
-					<input type="text" id="edit-livro-exemplares" required inputmode="numeric" maxlength="4">
-				</div>
-				<div class="form-row">
-					<label for="edit-livro-editoras">Editora(s)</label>
-					<select id="edit-livro-editoras" multiple size="4"></select>
-					<div class="selected-chips" id="editLivroEditorasChips" data-empty="Nenhuma editora selecionada"></div>
-				</div>
-				<div class="grid">
-					<div class="form-row">
-						<label for="edit-livro-ano">Ano de Publicação</label>
-						<input type="text" id="edit-livro-ano" maxlength="4" inputmode="numeric">
-					</div>
-					<div class="form-row">
-						<label for="edit-livro-localizacao">Localização Física</label>
-						<input type="text" id="edit-livro-localizacao" maxlength="100">
-					</div>
-				</div>
-				<div id="livro-edicao-messages" class="messages" aria-live="polite"></div>
-				<div class="form-actions">
-					<button type="submit" class="btn primary">Salvar</button>
-					<button type="button" id="btnCancelarLivroEdicao" class="btn">Cancelar</button>
-				</div>
-			</form>
-		</div>
-	</div>
-
-	<!-- Modal de Histórico -->
-	<div id="history-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="history-title">
-		<div class="modal history-modal">
-			<h3 id="history-title">Histórico</h3>
-			<ul id="history-content" class="history-list">
-				<li class="empty">Nenhum registro encontrado.</li>
-			</ul>
-			<div class="form-actions">
-				<button type="button" class="btn" id="btnHistoryClose">Fechar</button>
+					<!-- Livro 6 (em perspectiva) -->
+					<g transform="translate(710, 440)">
+						<rect x="0" y="0" width="40" height="60" rx="2" fill="url(#bookGrad2)" filter="url(#shadow)" opacity="0.8"/>
+						<rect x="2" y="2" width="36" height="56" fill="#4f6fec"/>
+						<line x1="5" y1="15" x2="35" y2="15" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+					</g>
+				</svg>
 			</div>
 		</div>
 	</div>
-	<script src="app.js"></script>
 </body>
 </html>
