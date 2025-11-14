@@ -114,11 +114,11 @@
 			padding: 14px 16px;
 			border: 2px solid #e5e7eb;
 			border-radius: 12px;
-			font-size: 16px;
 			color: #1a1a1a;
 			background: #ffffff;
 			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 			font-family: 'Poppins', sans-serif;
+			touch-action: none;
 		}
 
 		.form-row input:focus {
@@ -126,14 +126,17 @@
 			border-color: #3a5bdc;
 			box-shadow: 0 0 0 4px rgba(58, 91, 220, 0.12), 0 2px 8px rgba(58, 91, 220, 0.1);
 			transform: translateY(-1px);
+			touch-action: none;
 		}
 
 		.form-row input:hover {
 			border-color: #cbd5e1;
+			touch-action: none;
 		}
 
 		.form-row input::placeholder {
 			color: #999;
+			touch-action: none;
 		}
 
 		.password-wrapper {
@@ -142,6 +145,7 @@
 
 		.password-wrapper input {
 			padding-right: 40px;
+			touch-action: none;
 		}
 
 		.password-toggle {
