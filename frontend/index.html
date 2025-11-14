@@ -21,6 +21,10 @@
 					<a href="#/aluno/consulta" id="tab-consulta" class="tab">Consulta de Aluno</a>
 					<a href="#/autor/cadastro" id="tab-autor-cadastro" class="tab">Cadastro de Autor</a>
 					<a href="#/autor/consulta" id="tab-autor-consulta" class="tab">Consulta de Autor</a>
+					<a href="#/editora/cadastro" id="tab-editora-cadastro" class="tab">Cadastro de Editora</a>
+					<a href="#/editora/consulta" id="tab-editora-consulta" class="tab">Consulta de Editora</a>
+					<a href="#/livro/cadastro" id="tab-livro-cadastro" class="tab">Cadastro de Livro</a>
+					<a href="#/livro/consulta" id="tab-livro-consulta" class="tab">Consulta de Livro</a>
 				</nav>
 			</div>
 			<div class="header-right">
@@ -65,11 +69,37 @@
 						<a class="btn" href="#/autor/consulta">Consultar Autor</a>
 					</div>
 				</div>
+				<div class="entity-card">
+					<h3 class="entity-title">Editoras</h3>
+					<div class="stat-card">
+						<div class="stat-label">Editoras cadastradas</div>
+						<div class="stat-value" id="stat-total-editoras">0</div>
+					</div>
+					<div class="entity-actions">
+						<a class="btn primary" href="#/editora/cadastro">Cadastrar Editora</a>
+						<a class="btn" href="#/editora/consulta">Consultar Editora</a>
+					</div>
+				</div>
+				<div class="entity-card">
+					<h3 class="entity-title">Livros</h3>
+					<div class="stat-card">
+						<div class="stat-label">Livros cadastrados</div>
+						<div class="stat-value" id="stat-total-livros">0</div>
+					</div>
+					<div class="entity-actions">
+						<a class="btn primary" href="#/livro/cadastro">Cadastrar Livro</a>
+						<a class="btn" href="#/livro/consulta">Consultar Livro</a>
+					</div>
+				</div>
 			</div>
 		</section>
 
 		<section id="view-cadastro" class="view">
 			<h2>Cadastrar Aluno</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="aluno" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="aluno" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
 			<form id="form-cadastro" novalidate>
 				<div class="form-row">
 					<label for="nome">Nome *</label>
@@ -89,7 +119,7 @@
 				</div>
 				<div class="form-row">
 					<label for="dataNascimento">Data de Nascimento *</label>
-					<input type="date" id="dataNascimento" name="dataNascimento" required>
+					<input type="date" id="dataNascimento" name="dataNascimento" required max="2025-12-31">
 				</div>
 				<div class="form-actions">
 					<button type="submit" class="btn primary">Cadastrar</button>
@@ -102,6 +132,10 @@
 
 		<section id="view-consulta" class="view hidden">
 			<h2>Consulta de Alunos</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="aluno" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="aluno" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
 			<form id="form-filtro" class="filters">
 				<div class="form-row-filters">
 					<label for="filtroNome">Nome</label>
@@ -109,7 +143,7 @@
 				</div>
 				<div class="form-row-filters">
 					<label for="filtroMatricula">Nº de Matrícula</label>
-					<input type="text" id="filtroMatricula" inputmode="numeric" placeholder="Ex.: 2025" maxlength="20">
+					<input type="text" id="filtroMatricula" inputmode="numeric" placeholder="Ex.: 2025" maxlength="4">
 				</div>
 				<div class="form-row-filters">
 					<label for="filtroStatus">Status</label>
@@ -153,6 +187,10 @@
 
 		<section id="view-autor-cadastro" class="view hidden">
 			<h2>Cadastrar Autor</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="autor" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="autor" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
 			<form id="form-autor-cadastro" novalidate>
 				<div class="form-row">
 					<label for="autorNome">Nome *</label>
@@ -164,7 +202,7 @@
 				</div>
 				<div class="form-row">
 					<label for="autorNascimento">Data de Nascimento</label>
-					<input type="date" id="autorNascimento">
+					<input type="date" id="autorNascimento" max="2025-12-31">
 				</div>
 				<div class="form-row">
 					<label for="autorBiografia">Biografia</label>
@@ -180,6 +218,10 @@
 
 		<section id="view-autor-consulta" class="view hidden">
 			<h2>Consulta de Autores</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="autor" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="autor" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
 			<form id="form-autor-filtro" class="filters">
 				<div class="form-row-filters">
 					<label for="filtroAutorNome">Nome</label>
@@ -208,6 +250,190 @@
 					</thead>
 					<tbody id="tbody-autores">
 						<tr><td colspan="5" class="empty">Nenhum autor encontrado.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section id="view-editora-cadastro" class="view hidden">
+			<h2>Cadastrar Editora</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="editora" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="editora" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
+			<form id="form-editora-cadastro" novalidate>
+				<div class="form-row">
+					<label for="editoraNome">Nome *</label>
+					<input type="text" id="editoraNome" name="editoraNome" required placeholder="Ex.: Editora Atlas" maxlength="100">
+				</div>
+				<div class="form-row">
+					<label for="editoraTelefone">Telefone de Contato *</label>
+					<input type="text" id="editoraTelefone" name="editoraTelefone" required inputmode="numeric" placeholder="Ex.: 1234 567 8901" maxlength="13">
+				</div>
+				<div class="form-row">
+					<label for="editoraEndereco">Endereço Comercial</label>
+					<input type="text" id="editoraEndereco" name="editoraEndereco" placeholder="Ex.: Rua das Flores, 123" maxlength="200">
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Cadastrar</button>
+					<button type="reset" class="btn">Limpar</button>
+				</div>
+				<div id="editora-cadastro-messages" class="messages" aria-live="polite"></div>
+			</form>
+			<p class="note">Observação: Status padrão é <strong>Ativa</strong>. Não é possível alterar no cadastro.</p>
+		</section>
+
+		<section id="view-editora-consulta" class="view hidden">
+			<h2>Consulta de Editoras</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="editora" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="editora" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
+			<form id="form-editora-filtro" class="filters">
+				<div class="form-row-filters">
+					<label for="filtroEditoraNome">Nome</label>
+					<input type="text" id="filtroEditoraNome" placeholder="Buscar por nome" maxlength="100">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroEditoraStatus">Status</label>
+					<select id="filtroEditoraStatus">
+						<option value="">Todos</option>
+						<option value="Ativa">Ativa</option>
+						<option value="Inativa">Inativa</option>
+					</select>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Filtrar</button>
+					<button type="button" id="btnEditoraLimparFiltros" class="btn">Limpar</button>
+				</div>
+			</form>
+
+			<div id="editora-lista-container">
+				<table class="table" id="tabela-editoras">
+					<thead>
+						<tr>
+							<th>Nome</th>
+							<th>Telefone de Contato</th>
+							<th>Endereço Comercial</th>
+							<th>Status</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody id="tbody-editoras">
+						<tr><td colspan="5" class="empty">Nenhuma editora encontrada.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section id="view-livro-cadastro" class="view hidden">
+			<h2>Cadastrar Livro</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="livro" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="livro" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
+			<form id="form-livro-cadastro" novalidate>
+				<div class="form-row">
+					<label for="livroTitulo">Título *</label>
+					<input type="text" id="livroTitulo" name="livroTitulo" required maxlength="100" placeholder="Ex.: O Guia do Mochileiro das Galáxias">
+				</div>
+				<div class="form-row">
+					<label for="livroAutores">Autor(es) *</label>
+					<select id="livroAutores" name="livroAutores" multiple required size="5">
+						<option value="" disabled>Carregando autores...</option>
+					</select>
+					<div class="selected-chips" id="livroAutoresChips" data-empty="Nenhum autor selecionado"></div>
+					<small class="hint">Selecione um ou mais autores.</small>
+				</div>
+				<div class="form-row">
+					<label for="livroIsbn">ISBN *</label>
+					<input type="text" id="livroIsbn" name="livroIsbn" required maxlength="17" placeholder="XXX-XX-XXXX-XXX-X">
+				</div>
+				<div class="form-row">
+					<label for="livroGeneros">Gênero(s) *</label>
+					<select id="livroGeneros" name="livroGeneros" multiple required size="6">
+					</select>
+					<div class="selected-chips" id="livroGenerosChips" data-empty="Nenhum gênero selecionado"></div>
+					<small class="hint">Selecione pelo menos um gênero.</small>
+				</div>
+				<div class="form-row">
+					<label for="livroExemplares">Exemplares *</label>
+					<input type="text" id="livroExemplares" name="livroExemplares" required inputmode="numeric" maxlength="4" placeholder="Quantidade disponível">
+				</div>
+				<div class="form-row">
+					<label for="livroEditoras">Editora(s)</label>
+					<select id="livroEditoras" name="livroEditoras" multiple size="4">
+						<option value="">Carregando editoras...</option>
+					</select>
+					<div class="selected-chips" id="livroEditorasChips" data-empty="Nenhuma editora selecionada"></div>
+					<small class="hint">Opcional. Selecione uma ou mais editoras.</small>
+				</div>
+				<div class="grid">
+					<div class="form-row">
+						<label for="livroAno">Ano de Publicação</label>
+						<input type="text" id="livroAno" name="livroAno" placeholder="Ex.: 2024" maxlength="4" inputmode="numeric">
+					</div>
+					<div class="form-row">
+						<label for="livroLocalizacao">Localização Física</label>
+						<input type="text" id="livroLocalizacao" name="livroLocalizacao" maxlength="100" placeholder="Ex.: Estante B - Prateleira 3">
+					</div>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Cadastrar</button>
+					<button type="reset" class="btn">Limpar</button>
+				</div>
+				<div id="livro-cadastro-messages" class="messages" aria-live="polite"></div>
+			</form>
+		</section>
+
+		<section id="view-livro-consulta" class="view hidden">
+			<h2>Consulta de Livros</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="livro" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="livro" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
+			<form id="form-livro-filtro" class="filters">
+				<div class="form-row-filters">
+					<label for="filtroLivroTitulo">Título</label>
+					<input type="text" id="filtroLivroTitulo" placeholder="Buscar por título" maxlength="100">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroLivroAutor">Autor</label>
+					<input type="text" id="filtroLivroAutor" placeholder="Buscar por autor" maxlength="150">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroLivroIsbn">ISBN</label>
+					<input type="text" id="filtroLivroIsbn" placeholder="XXX-XX-XXXX-XXX-X" maxlength="17">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroLivroGenero">Gênero</label>
+					<select id="filtroLivroGenero">
+						<option value="">Todos</option>
+					</select>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Filtrar</button>
+					<button type="button" id="btnLivroLimparFiltros" class="btn">Limpar</button>
+				</div>
+			</form>
+
+			<div id="livro-lista-container">
+				<table class="table" id="tabela-livros">
+					<thead>
+						<tr>
+							<th>Título</th>
+							<th>Autor(es)</th>
+							<th>ISBN</th>
+							<th>Gênero(s)</th>
+							<th>Exemplares</th>
+							<th>Editora(s)</th>
+							<th>Ano</th>
+							<th>Localização</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody id="tbody-livros">
+						<tr><td colspan="9" class="empty">Nenhum livro encontrado.</td></tr>
 					</tbody>
 				</table>
 			</div>
@@ -247,7 +473,7 @@
 				</div>
 				<div class="form-row">
 					<label for="edit-dataNascimento">Data de Nascimento *</label>
-					<input type="date" id="edit-dataNascimento" required>
+					<input type="date" id="edit-dataNascimento" required max="2025-12-31">
 				</div>
 				<div class="form-row">
 					<label for="edit-status">Status *</label>
@@ -282,7 +508,7 @@
 				</div>
 				<div class="form-row">
 					<label for="edit-autor-nascimento">Data de Nascimento</label>
-					<input type="date" id="edit-autor-nascimento">
+					<input type="date" id="edit-autor-nascimento" max="2025-12-31">
 				</div>
 				<div class="form-row">
 					<label for="edit-autor-biografia">Biografia</label>
@@ -294,6 +520,105 @@
 					<button type="button" id="btnCancelarAutorEdicao" class="btn">Cancelar</button>
 				</div>
 			</form>
+		</div>
+	</div>
+
+	<!-- Modal de Edição de Editora -->
+	<div id="modal-editora-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-editora-title">
+		<div class="modal">
+			<h3 id="modal-editora-title">Editar Editora</h3>
+			<form id="form-editora-edicao" novalidate>
+				<input type="hidden" id="edit-editora-id">
+				<div class="form-row">
+					<label for="edit-editora-nome">Nome *</label>
+					<input type="text" id="edit-editora-nome" required maxlength="100">
+				</div>
+				<div class="form-row">
+					<label for="edit-editora-telefone">Telefone de Contato *</label>
+					<input type="text" id="edit-editora-telefone" required inputmode="numeric" maxlength="13">
+				</div>
+				<div class="form-row">
+					<label for="edit-editora-endereco">Endereço Comercial</label>
+					<input type="text" id="edit-editora-endereco" maxlength="200">
+				</div>
+				<div class="form-row">
+					<label for="edit-editora-status">Status *</label>
+					<select id="edit-editora-status" required>
+						<option value="Ativa">Ativa</option>
+						<option value="Inativa">Inativa</option>
+					</select>
+				</div>
+				<div id="editora-edicao-messages" class="messages" aria-live="polite"></div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Salvar</button>
+					<button type="button" id="btnCancelarEditoraEdicao" class="btn">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Modal de Edição de Livro -->
+	<div id="modal-livro-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-livro-title">
+		<div class="modal">
+			<h3 id="modal-livro-title">Editar Livro</h3>
+			<form id="form-livro-edicao" novalidate>
+				<input type="hidden" id="edit-livro-id">
+				<div class="form-row">
+					<label for="edit-livro-titulo">Título *</label>
+					<input type="text" id="edit-livro-titulo" required maxlength="100">
+				</div>
+				<div class="form-row">
+					<label for="edit-livro-autores">Autor(es) *</label>
+					<select id="edit-livro-autores" multiple required size="5"></select>
+					<div class="selected-chips" id="editLivroAutoresChips" data-empty="Nenhum autor selecionado"></div>
+				</div>
+				<div class="form-row">
+					<label for="edit-livro-isbn">ISBN *</label>
+					<input type="text" id="edit-livro-isbn" required maxlength="17">
+				</div>
+				<div class="form-row">
+					<label for="edit-livro-generos">Gênero(s) *</label>
+					<select id="edit-livro-generos" multiple required size="6"></select>
+					<div class="selected-chips" id="editLivroGenerosChips" data-empty="Nenhum gênero selecionado"></div>
+				</div>
+				<div class="form-row">
+					<label for="edit-livro-exemplares">Exemplares *</label>
+					<input type="text" id="edit-livro-exemplares" required inputmode="numeric" maxlength="4">
+				</div>
+				<div class="form-row">
+					<label for="edit-livro-editoras">Editora(s)</label>
+					<select id="edit-livro-editoras" multiple size="4"></select>
+					<div class="selected-chips" id="editLivroEditorasChips" data-empty="Nenhuma editora selecionada"></div>
+				</div>
+				<div class="grid">
+					<div class="form-row">
+						<label for="edit-livro-ano">Ano de Publicação</label>
+						<input type="text" id="edit-livro-ano" maxlength="4" inputmode="numeric">
+					</div>
+					<div class="form-row">
+						<label for="edit-livro-localizacao">Localização Física</label>
+						<input type="text" id="edit-livro-localizacao" maxlength="100">
+					</div>
+				</div>
+				<div id="livro-edicao-messages" class="messages" aria-live="polite"></div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Salvar</button>
+					<button type="button" id="btnCancelarLivroEdicao" class="btn">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Modal de Histórico -->
+	<div id="history-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="history-title">
+		<div class="modal history-modal">
+			<h3 id="history-title">Histórico</h3>
+			<ul id="history-content" class="history-list">
+				<li class="empty">Nenhum registro encontrado.</li>
+			</ul>
+			<div class="form-actions">
+				<button type="button" class="btn" id="btnHistoryClose">Fechar</button>
+			</div>
 		</div>
 	</div>
 	<script src="app.js"></script>

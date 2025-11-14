@@ -76,7 +76,7 @@ html, body {
 .tab {
 	color: var(--muted);
 	text-decoration: none;
-	padding: 10px 14px;
+	padding: 10px 12px;
 	border: 1px solid var(--border);
 	border-radius: 10px;
 	background: var(--panel);
@@ -214,6 +214,42 @@ form {
 	margin-top: 6px;
 }
 
+.selected-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 8px;
+	min-height: 32px;
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 10px;
+	background: rgba(58, 95, 220, 0.15);
+	border: 1px solid rgba(58, 95, 220, 0.4);
+	border-radius: 999px;
+	font-size: 12px;
+	color: var(--text);
+}
+
+.chip button {
+	background: transparent;
+	border: none;
+	color: inherit;
+	font-size: 14px;
+	cursor: pointer;
+	padding: 0;
+	line-height: 1;
+}
+
+.chip.empty {
+	background: transparent;
+	border: 1px dashed var(--border);
+	color: var(--muted);
+}
+
 .form-row-filters .hint {
 	color: var(--muted);
 	font-size: 12px;
@@ -331,12 +367,77 @@ form {
 	border-radius: 16px;
 	padding: 18px;
 	box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+	max-height: 90vh;
+	overflow-y: auto;
+}
+#modal-livro-overlay .modal {
+	max-width: 720px;
 }
 .modal h3 { margin: 0 0 10px; }
 .grid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0,1fr));
 	gap: 12px;
+}
+
+.history-actions {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin: 10px 0 20px;
+}
+
+.history-modal {
+	max-width: 720px;
+}
+
+.history-list {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	max-height: 60vh;
+	overflow-y: auto;
+}
+.history-list li {
+	font-size: 13px;
+	color: var(--muted);
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	padding: 10px;
+	background: rgba(255,255,255,0.02);
+}
+.history-list li .history-meta {
+	font-weight: 600;
+	color: var(--text);
+}
+.history-list li .history-data {
+	margin-top: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 12px;
+}
+.history-list li.empty {
+	border-style: dashed;
+	text-align: center;
+	font-style: italic;
+}
+
+select[multiple] {
+	background-color: #0e1530;
+}
+select[multiple]:focus {
+	background-color: #0e1530;
+}
+select[multiple] option {
+	background-color: #0e1530;
+	color: var(--text);
+}
+select[multiple] option:checked {
+	background-color: rgba(58,95,220,0.35);
 }
 
 @media (max-width: 900px) {

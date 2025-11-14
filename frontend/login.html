@@ -3,85 +3,394 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Login - Sistema de Biblioteca Escolar</title>
+	<title>Login - Sistema de Biblioteca</title>
 	<link rel="stylesheet" href="styles.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 	<style>
-		.page-login {
-			min-height: 100vh;
-			display: grid;
-			place-items: center;
-			background: var(--bg);
-			padding: 24px;
+		* {
+			box-sizing: border-box;
 		}
-		.login-card {
+
+		body {
+			margin: 0;
+			padding: 0;
+			font-family: 'Poppins', sans-serif;
+			overflow-x: hidden;
+		}
+
+		.login-container {
+			display: flex;
+			min-height: 100vh;
+			width: 100%;
+		}
+
+		.login-left {
+			flex: 1;
+			background: var(--bg);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			padding: 40px;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.login-left::before {
+			content: '';
+			position: absolute;
+			top: -50%;
+			right: -20%;
+			width: 600px;
+			height: 600px;
+			background: radial-gradient(circle, rgba(58, 91, 220, 0.15) 0%, transparent 70%);
+			border-radius: 50%;
+		}
+
+		.login-left::after {
+			content: '';
+			position: absolute;
+			bottom: -30%;
+			left: -10%;
+			width: 500px;
+			height: 500px;
+			background: radial-gradient(circle, rgba(42, 73, 199, 0.12) 0%, transparent 70%);
+			border-radius: 50%;
+		}
+
+		.login-form-wrapper {
 			width: 100%;
 			max-width: 420px;
+			position: relative;
+			z-index: 1;
 		}
+
 		.brand {
 			text-align: center;
-			margin-bottom: 16px;
+			margin-bottom: 40px;
 		}
+
 		.brand h1 {
-			margin: 0;
-			font-size: 22px;
-			color: var(--text);
+			margin: 0 0 12px 0;
+			font-size: 34px;
+			color: #ffffff;
+			font-weight: 700;
+			letter-spacing: -0.8px;
+			text-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+			line-height: 1.2;
 		}
+
 		.brand p {
-			margin: 6px 0 0;
-			color: var(--muted);
-			font-size: 14px;
+			margin: 0;
+			color: rgba(232, 236, 241, 0.9);
+			font-size: 16px;
+			font-weight: 400;
+			letter-spacing: 0.2px;
 		}
-		.login-actions {
+
+		.login-form {
+			background: rgba(255, 255, 255, 0.98);
+			backdrop-filter: blur(10px);
+			border-radius: 20px;
+			padding: 36px;
+			box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
+		}
+
+		.form-row {
+			margin-bottom: 22px;
+		}
+
+		.form-row label {
+			display: block;
+			margin-bottom: 10px;
+			font-size: 14px;
+			font-weight: 600;
+			color: #1e293b;
+			letter-spacing: 0.1px;
+		}
+
+		.form-row input {
+			width: 100%;
+			padding: 14px 16px;
+			border: 2px solid #e5e7eb;
+			border-radius: 12px;
+			font-size: 15px;
+			color: #1a1a1a;
+			background: #ffffff;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			font-family: 'Poppins', sans-serif;
+		}
+
+		.form-row input:focus {
+			outline: none;
+			border-color: #3a5bdc;
+			box-shadow: 0 0 0 4px rgba(58, 91, 220, 0.12), 0 2px 8px rgba(58, 91, 220, 0.1);
+			transform: translateY(-1px);
+		}
+
+		.form-row input:hover {
+			border-color: #cbd5e1;
+		}
+
+		.form-row input::placeholder {
+			color: #999;
+		}
+
+		.password-wrapper {
+			position: relative;
+		}
+
+		.password-wrapper input {
+			padding-right: 40px;
+		}
+
+		.password-toggle {
+			position: absolute;
+			right: 12px;
+			top: 50%;
+			transform: translateY(-50%);
+			background: none;
+			border: none;
+			color: #666;
+			cursor: pointer;
+			font-size: 14px;
+			padding: 4px;
 			display: flex;
 			align-items: center;
-			justify-content: space-between;
-			gap: 10px;
-			margin-top: 8px;
+			justify-content: center;
+			transition: color 0.3s ease;
+			z-index: 2;
+			width: 24px;
+			height: 24px;
 		}
-		.helper {
-			color: var(--muted);
-			font-size: 12px;
+
+		.password-toggle:hover {
+			color: #3a5bdc;
+		}
+
+		.password-toggle:focus {
+			outline: none;
+			color: #3a5bdc;
+		}
+
+		.password-toggle i {
+			font-size: 14px;
+		}
+
+		.submit-button {
+			width: 100%;
+			padding: 16px;
+			background: linear-gradient(135deg, #3a5bdc 0%, #2a49c7 100%);
+			color: #ffffff;
+			border: none;
+			border-radius: 12px;
+			font-size: 16px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			font-family: 'Poppins', sans-serif;
+			margin-top: 12px;
+			box-shadow: 0 4px 14px rgba(58, 91, 220, 0.4), 0 2px 4px rgba(58, 91, 220, 0.2);
+			letter-spacing: 0.3px;
+		}
+
+		.submit-button:hover {
+			background: linear-gradient(135deg, #2a49c7 0%, #1e3a9e 100%);
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px rgba(58, 91, 220, 0.5), 0 4px 8px rgba(58, 91, 220, 0.3);
+		}
+
+		.submit-button:active {
+			transform: translateY(0);
+			box-shadow: 0 2px 8px rgba(58, 91, 220, 0.4);
+		}
+
+		.login-messages {
+			margin-top: 16px;
+			min-height: 20px;
+			font-size: 14px;
+			text-align: center;
+			font-weight: 500;
+		}
+
+		.login-messages.error {
+			color: #e74c3c;
+		}
+
+		.login-messages.success {
+			color: #27ae60;
+		}
+
+		.login-right {
+			flex: 1;
+			background: rgba(255, 255, 255, 0.98);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 60px 40px;
+			position: relative;
+		}
+
+		.login-right::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: 
+				radial-gradient(circle at 20% 30%, rgba(58, 91, 220, 0.08) 0%, transparent 50%),
+				radial-gradient(circle at 80% 70%, rgba(42, 73, 199, 0.06) 0%, transparent 50%);
+		}
+
+		.library-image-wrapper {
+			position: relative;
+			z-index: 1;
+			max-width: 600px;
+			width: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.library-svg {
+			width: 100%;
+			height: auto;
+			max-width: 100%;
+		}
+
+		/* Responsive */
+		@media (max-width: 968px) {
+			.login-container {
+				flex-direction: column;
+			}
+
+			.login-left {
+				padding: 32px 24px;
+				min-height: 50vh;
+			}
+
+			.login-right {
+				padding: 40px 24px;
+				min-height: 50vh;
+			}
+
+			.brand {
+				margin-bottom: 32px;
+			}
+
+			.brand h1 {
+				font-size: 30px;
+			}
+
+			.brand p {
+				font-size: 15px;
+			}
+
+			.login-form {
+				padding: 28px;
+			}
+
+			.library-image-wrapper {
+				max-width: 600px;
+			}
+		}
+
+		@media (max-width: 480px) {
+			.login-left {
+				padding: 24px 20px;
+			}
+
+			.login-right {
+				padding: 24px 20px;
+			}
+
+			.login-form {
+				padding: 20px;
+			}
+
+			.brand {
+				margin-bottom: 24px;
+			}
+
+			.brand h1 {
+				font-size: 26px;
+			}
+
+			.brand p {
+				font-size: 14px;
+			}
+
+			.login-right {
+				padding: 30px 20px;
+			}
+
+			.library-image-wrapper {
+				max-width: 100%;
+			}
+
+			.login-form {
+				padding: 28px;
+			}
 		}
 	</style>
 	<script>
 		const VALID_USERNAME = "bibliotecario";
 		const VALID_PASSWORD = "441325";
 
-	document.addEventListener("DOMContentLoaded", () => {
+		document.addEventListener("DOMContentLoaded", () => {
 			const form = document.getElementById("form-login");
 			const messages = document.getElementById("login-messages");
 			const userInput = document.getElementById("usuario");
 			const passInput = document.getElementById("senha");
-		const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+			const passwordToggle = document.getElementById("password-toggle");
+			const submitBtn = form.querySelector('button[type="submit"]');
 
-		form.addEventListener("keydown", (event) => {
-			if (event.key !== "Enter") return;
-			const target = event.target;
-			if (!(target instanceof HTMLElement)) return;
-			const fields = [userInput, passInput];
-			const index = fields.indexOf(target);
-			if (index === -1) return;
-			event.preventDefault();
-			const next = fields[index + 1];
-			if (next) {
-				next.focus();
-				if (next instanceof HTMLInputElement) next.select?.();
-				return;
-			}
-			const allFilled = fields.every(field => field.value.trim());
-			if (!allFilled) {
-				const firstEmpty = fields.find(field => !field.value.trim());
-				if (firstEmpty) firstEmpty.focus();
-				return;
-			}
-			submitBtn?.click();
-		});
+			// Toggle password visibility
+			passwordToggle.addEventListener("click", (e) => {
+				e.preventDefault();
+				const type = passInput.getAttribute("type") === "password" ? "text" : "password";
+				passInput.setAttribute("type", type);
+				
+				const icon = passwordToggle.querySelector("i");
+				if (type === "password") {
+					icon.classList.remove("fa-eye");
+					icon.classList.add("fa-eye-slash");
+				} else {
+					icon.classList.remove("fa-eye-slash");
+					icon.classList.add("fa-eye");
+				}
+			});
 
+			// Enter key navigation
+			form.addEventListener("keydown", (event) => {
+				if (event.key !== "Enter") return;
+				const target = event.target;
+				if (!(target instanceof HTMLElement)) return;
+				const fields = [userInput, passInput];
+				const index = fields.indexOf(target);
+				if (index === -1) return;
+				event.preventDefault();
+				const next = fields[index + 1];
+				if (next) {
+					next.focus();
+					if (next instanceof HTMLInputElement) next.select?.();
+					return;
+				}
+				const allFilled = fields.every(field => field.value.trim());
+				if (!allFilled) {
+					const firstEmpty = fields.find(field => !field.value.trim());
+					if (firstEmpty) firstEmpty.focus();
+					return;
+				}
+				submitBtn?.click();
+			});
+
+			// Form submission
 			form.addEventListener("submit", (e) => {
 				e.preventDefault();
 				messages.textContent = "";
-				messages.className = "messages";
+				messages.className = "login-messages";
 
 				const username = userInput.value.trim();
 				const password = passInput.value;
@@ -106,27 +415,173 @@
 	</script>
 </head>
 <body>
-	<div class="page-login">
-		<div class="login-card">
-			<div class="brand">
-				<h1>Sistema de Biblioteca Escolar</h1>
-				<p>Acesse com as credenciais do bibliotecário</p>
+	<div class="login-container">
+		<div class="login-left">
+			<div class="login-form-wrapper">
+				<div class="brand">
+					<h1>Sistema de Biblioteca</h1>
+					<p>Acesse com as credenciais do bibliotecário</p>
+				</div>
+				<form id="form-login" class="login-form" novalidate>
+					<div class="form-row">
+						<label for="usuario">Usuário *</label>
+						<input type="text" id="usuario" name="usuario" required placeholder="Seu usuário" maxlength="80" autocomplete="username">
+					</div>
+					<div class="form-row">
+						<label for="senha">Senha *</label>
+						<div class="password-wrapper">
+							<input type="password" id="senha" name="senha" required placeholder="Sua senha" maxlength="80" autocomplete="current-password">
+							<button type="button" id="password-toggle" class="password-toggle" aria-label="Mostrar senha">
+								<i class="fa-solid fa-eye-slash"></i>
+							</button>
+						</div>
+					</div>
+					<button type="submit" class="submit-button">Entrar</button>
+					<div id="login-messages" class="login-messages" aria-live="polite"></div>
+				</form>
 			</div>
-			<form id="form-login" novalidate>
-				<div class="form-row">
-					<label for="usuario">Usuário *</label>
-					<input type="text" id="usuario" name="usuario" required placeholder="Seu usuário" maxlength="80" autocomplete="username">
-				</div>
-				<div class="form-row">
-					<label for="senha">Senha *</label>
-					<input type="password" id="senha" name="senha" required placeholder="Sua senha" maxlength="80" autocomplete="current-password">
-				</div>
-				<div class="login-actions">
-					<button type="submit" class="btn primary">Entrar</button>
-					<span class="helper"><i class="fa-solid fa-lock"></i></span>
-				</div>
-				<div id="login-messages" class="messages" aria-live="polite"></div>
-			</form>
+		</div>
+		<div class="login-right">
+			<div class="library-image-wrapper">
+				<svg class="library-svg" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+					<defs>
+						<linearGradient id="deviceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+						</linearGradient>
+						<linearGradient id="screenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#3a5bdc;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#2a49c7;stop-opacity:1" />
+						</linearGradient>
+						<linearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#3a5bdc;stop-opacity:0.4" />
+							<stop offset="100%" style="stop-color:#2a49c7;stop-opacity:0.2" />
+						</linearGradient>
+						<linearGradient id="bookGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+							<stop offset="0%" style="stop-color:#3a5bdc;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#2a49c7;stop-opacity:1" />
+						</linearGradient>
+						<linearGradient id="bookGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+							<stop offset="0%" style="stop-color:#4f6fec;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#3a5bdc;stop-opacity:1" />
+						</linearGradient>
+						<filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+							<feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+							<feOffset dx="0" dy="4" result="offsetblur"/>
+							<feComponentTransfer>
+								<feFuncA type="linear" slope="0.3"/>
+							</feComponentTransfer>
+							<feMerge>
+								<feMergeNode/>
+								<feMergeNode in="SourceGraphic"/>
+							</feMerge>
+						</filter>
+					</defs>
+
+					<!-- Tablet/Smartphone -->
+					<g transform="translate(250, 80)">
+						<!-- Glow effect atrás do dispositivo -->
+						<ellipse cx="140" cy="200" rx="120" ry="180" fill="url(#glowGradient)" opacity="0.6"/>
+						
+						<!-- Corpo do dispositivo -->
+						<rect x="0" y="0" width="280" height="400" rx="24" fill="url(#deviceGradient)" filter="url(#shadow)"/>
+						<rect x="8" y="8" width="264" height="384" rx="20" fill="#0f172a"/>
+						
+						<!-- Tela com interface de biblioteca -->
+						<rect x="16" y="16" width="248" height="368" rx="16" fill="url(#screenGradient)" opacity="0.98"/>
+						
+						<!-- Header da tela -->
+						<rect x="16" y="16" width="248" height="50" rx="16" fill="rgba(255, 255, 255, 0.1)"/>
+						<circle cx="45" cy="41" r="8" fill="rgba(255, 255, 255, 0.3)"/>
+						<rect x="60" y="36" width="80" height="10" rx="2" fill="rgba(255, 255, 255, 0.4)"/>
+						<rect x="200" y="36" width="40" height="10" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						
+						<!-- Ícone de livro na tela -->
+						<g transform="translate(130, 120)">
+							<!-- Livro aberto -->
+							<path d="M -25 -20 L 0 -25 L 25 -20 L 25 20 L 0 25 L -25 20 Z" fill="rgba(255, 255, 255, 0.9)" opacity="0.9"/>
+							<path d="M 0 -25 L 25 -20 L 25 20 L 0 25 Z" fill="rgba(255, 255, 255, 0.7)" opacity="0.9"/>
+							<line x1="0" y1="-25" x2="0" y2="25" stroke="rgba(255, 255, 255, 0.5)" stroke-width="2"/>
+							<circle cx="2" cy="0" r="4" fill="rgba(255, 255, 255, 0.8)"/>
+							<!-- Páginas -->
+							<line x1="-22" y1="-15" x2="22" y2="-15" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+							<line x1="-22" y1="-8" x2="22" y2="-8" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+							<line x1="-22" y1="-1" x2="22" y2="-1" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+							<line x1="-22" y1="6" x2="22" y2="6" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+							<line x1="-22" y1="13" x2="22" y2="13" stroke="rgba(58, 91, 220, 0.3)" stroke-width="1"/>
+						</g>
+						
+						<!-- Cards de livros na tela -->
+						<rect x="30" y="220" width="100" height="60" rx="8" fill="rgba(255, 255, 255, 0.15)"/>
+						<rect x="35" y="225" width="90" height="8" rx="2" fill="rgba(255, 255, 255, 0.4)"/>
+						<rect x="35" y="238" width="70" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						<rect x="35" y="248" width="80" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						
+						<rect x="150" y="220" width="100" height="60" rx="8" fill="rgba(255, 255, 255, 0.15)"/>
+						<rect x="155" y="225" width="90" height="8" rx="2" fill="rgba(255, 255, 255, 0.4)"/>
+						<rect x="155" y="238" width="70" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						<rect x="155" y="248" width="80" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						
+						<rect x="30" y="300" width="100" height="60" rx="8" fill="rgba(255, 255, 255, 0.15)"/>
+						<rect x="35" y="305" width="90" height="8" rx="2" fill="rgba(255, 255, 255, 0.4)"/>
+						<rect x="35" y="318" width="70" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						<rect x="35" y="328" width="80" height="6" rx="2" fill="rgba(255, 255, 255, 0.3)"/>
+						
+						<!-- Botão home -->
+						<rect x="110" y="370" width="60" height="6" rx="3" fill="rgba(255, 255, 255, 0.3)"/>
+					</g>
+
+					<!-- Livros físicos ao redor -->
+					<!-- Livro 1 -->
+					<g transform="translate(100, 200)">
+						<rect x="0" y="0" width="45" height="70" rx="3" fill="url(#bookGrad1)" filter="url(#shadow)" opacity="0.9"/>
+						<rect x="3" y="3" width="39" height="64" fill="#4f6fec"/>
+						<line x1="6" y1="15" x2="39" y2="15" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="25" x2="39" y2="25" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="35" x2="39" y2="35" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="45" x2="39" y2="45" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+					</g>
+
+					<!-- Livro 2 -->
+					<g transform="translate(660, 180)">
+						<rect x="0" y="0" width="45" height="70" rx="3" fill="url(#bookGrad2)" filter="url(#shadow)" opacity="0.9"/>
+						<rect x="3" y="3" width="39" height="64" fill="#4f6fec"/>
+						<line x1="6" y1="15" x2="39" y2="15" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="25" x2="39" y2="25" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+						<line x1="6" y1="35" x2="39" y2="35" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1"/>
+					</g>
+
+					<!-- Livro 3 (menor) -->
+					<g transform="translate(80, 320)">
+						<rect x="0" y="0" width="35" height="55" rx="2" fill="url(#bookGrad1)" filter="url(#shadow)" opacity="0.85"/>
+						<rect x="2" y="2" width="31" height="51" fill="#4f6fec"/>
+						<line x1="5" y1="12" x2="30" y2="12" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+						<line x1="5" y1="20" x2="30" y2="20" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+					</g>
+
+					<!-- Livro 4 (menor) -->
+					<g transform="translate(680, 310)">
+						<rect x="0" y="0" width="35" height="55" rx="2" fill="url(#bookGrad2)" filter="url(#shadow)" opacity="0.85"/>
+						<rect x="2" y="2" width="31" height="51" fill="#4f6fec"/>
+						<line x1="5" y1="12" x2="30" y2="12" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+						<line x1="5" y1="20" x2="30" y2="20" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+					</g>
+
+					<!-- Livro 5 (em perspectiva) -->
+					<g transform="translate(50, 450)">
+						<rect x="0" y="0" width="40" height="60" rx="2" fill="url(#bookGrad1)" filter="url(#shadow)" opacity="0.8"/>
+						<rect x="2" y="2" width="36" height="56" fill="#4f6fec"/>
+						<line x1="5" y1="15" x2="35" y2="15" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+					</g>
+
+					<!-- Livro 6 (em perspectiva) -->
+					<g transform="translate(710, 440)">
+						<rect x="0" y="0" width="40" height="60" rx="2" fill="url(#bookGrad2)" filter="url(#shadow)" opacity="0.8"/>
+						<rect x="2" y="2" width="36" height="56" fill="#4f6fec"/>
+						<line x1="5" y1="15" x2="35" y2="15" stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8"/>
+					</g>
+				</svg>
+			</div>
 		</div>
 	</div>
 </body>
