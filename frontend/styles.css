@@ -166,28 +166,14 @@ form {
 	flex-direction: column;
 }
 
-.form-row label {
-	font-size: 13px;
-	color: var(--muted);
-	margin-bottom: 6px;
-}
-
+.form-row label,
 .form-row-filters label {
 	font-size: 13px;
 	color: var(--muted);
 	margin-bottom: 6px;
 }
 
-.form-row input, .form-row select {
-	background: #0e1530;
-	border: 1px solid var(--border);
-	color: var(--muted);
-	padding: 10px 12px;
-	border-radius: 10px;
-	outline: none;
-	transition: 0.15s ease;
-}
-
+.form-row input, .form-row select,
 .form-row-filters input, .form-row-filters select {
 	background: #0e1530;
 	border: 1px solid var(--border);
@@ -198,11 +184,7 @@ form {
 	transition: 0.15s ease;
 }
 
-.form-row input:focus, .form-row select:focus {
-	border-color: #3a6ffd;
-	box-shadow: 0 0 0 3px rgba(58,111,253,0.2);
-}
-
+.form-row input:focus, .form-row select:focus,
 .form-row-filters input:focus, .form-row-filters select:focus {
 	border-color: #3a6ffd;
 	box-shadow: 0 0 0 3px rgba(58,111,253,0.2);
@@ -250,11 +232,6 @@ form {
 	color: var(--muted);
 }
 
-.form-row-filters .hint {
-	color: var(--muted);
-	font-size: 12px;
-	margin-top: 6px;
-}
 
 .form-actions {
 	display: flex;

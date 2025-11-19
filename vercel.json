@@ -1,0 +1,9 @@
+{
+    "redirects": [
+        {
+            "source": "/",
+            "destination": "/frontend/login.html",
+            "permanent": false
+        }
+    ]
+}
