@@ -2,7 +2,7 @@
     "redirects": [
         {
             "source": "/",
-            "destination": "/frontend/login.html",
+            "destination": "/login.html",
             "permanent": false
         }
     ]
