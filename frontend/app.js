@@ -37,76 +37,55 @@ function generateId() {
 	return crypto?.randomUUID ? crypto.randomUUID() : 'aluno_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
 }
 
-function loadAlunos() {
+function loadFromStorage(key) {
 	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
+		const raw = localStorage.getItem(key);
 		if (!raw) return [];
 		const list = JSON.parse(raw);
-		if (!Array.isArray(list)) return [];
-		return list;
+		return Array.isArray(list) ? list : [];
 	} catch {
 		return [];
 	}
+}
+
+function saveToStorage(key, data) {
+	localStorage.setItem(key, JSON.stringify(data));
+}
+
+function loadAlunos() {
+	return loadFromStorage(STORAGE_KEY);
 }
 
 function saveAlunos(alunos) {
-	localStorage.setItem(STORAGE_KEY, JSON.stringify(alunos));
+	saveToStorage(STORAGE_KEY, alunos);
 }
 
 function loadAutores() {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY_AUTORES);
-		if (!raw) return [];
-		const list = JSON.parse(raw);
-		if (!Array.isArray(list)) return [];
-		return list;
-	} catch {
-		return [];
-	}
+	return loadFromStorage(STORAGE_KEY_AUTORES);
 }
 
 function saveAutores(autores) {
-	localStorage.setItem(STORAGE_KEY_AUTORES, JSON.stringify(autores));
+	saveToStorage(STORAGE_KEY_AUTORES, autores);
 	refreshLivroRelatedSelects();
 }
 
 function loadEditoras() {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY_EDITORAS);
-		if (!raw) return [];
-		const list = JSON.parse(raw);
-		if (!Array.isArray(list)) return [];
-		return list;
-	} catch {
-		return [];
-	}
+	return loadFromStorage(STORAGE_KEY_EDITORAS);
 }
 
 function saveEditoras(editoras) {
-	localStorage.setItem(STORAGE_KEY_EDITORAS, JSON.stringify(editoras));
+	saveToStorage(STORAGE_KEY_EDITORAS, editoras);
 	refreshLivroRelatedSelects();
 }
 
 function loadLivros() {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY_LIVROS);
-		if (!raw) return [];
-		const list = JSON.parse(raw);
-		if (!Array.isArray(list)) return [];
-		return list;
-	} catch {
-		return [];
-	}
+	return loadFromStorage(STORAGE_KEY_LIVROS);
 }
 
 function saveLivros(livros) {
-	localStorage.setItem(STORAGE_KEY_LIVROS, JSON.stringify(livros));
+	saveToStorage(STORAGE_KEY_LIVROS, livros);
 }
 
-function formatDateToISO(dateStr) {
-	// Se vier yyyy-mm-dd, retorna como está
-	return dateStr;
-}
 
 function formatDateToDisplay(iso) {
 	if (!iso) return '';
@@ -285,7 +264,7 @@ function refreshLivroRelatedSelects() {
 		if (!autores.length) {
 			const opt = document.createElement('option');
 			opt.value = '';
-			opt.textContent = 'Cadastre autores antes de adicionar livros.';
+			opt.textContent = 'Nenhum autor cadastrado.';
 			opt.disabled = true;
 			select.appendChild(opt);
 			refreshSelectChips(select);
@@ -401,6 +380,21 @@ function enforceNumericInput(input, maxLength) {
 		if (input.value !== sliced) input.value = sliced;
 	});
 }
+
+function enforceInputPattern(input, pattern) {
+	if (!input) return;
+	input.addEventListener('input', () => {
+		const raw = input.value;
+		const cleaned = raw.normalize('NFC').replace(pattern, '');
+		if (raw !== cleaned) input.value = cleaned;
+	});
+}
+
+const INPUT_PATTERNS = {
+	lettersOnly: /[^\p{L}\p{M}\s]/gu,
+	lettersAndNumbers: /[^\p{L}\p{M}\p{N}\s]/gu,
+	lettersNumbersPunct: /[^\p{L}\p{M}\p{N}\s.,;:!?'"\-()]/gu
+};
 
 function cloneRecord(record) {
 	if (!record) return null;
@@ -754,12 +748,7 @@ function setupCadastro() {
 	enableEnterNavigation(form, validateAlunoForm);
 
 	// Restrições de entrada
-	nome.addEventListener('input', () => {
-		// permite apenas letras e espaços (remove outros)
-		const raw = nome.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-		if (raw !== cleaned) nome.value = cleaned;
-	});
+	enforceInputPattern(nome, INPUT_PATTERNS.lettersOnly);
 	matricula.addEventListener('input', () => {
 		const raw = matricula.value;
 		const cleaned = raw.replace(/\D+/g, '');
@@ -830,12 +819,6 @@ function setupCadastro() {
 			dataNascimento.focus();
 			return;
 		}
-		const nascimentoAno = Number(vNascimento.slice(0, 4));
-		if (nascimentoAno > 2025) {
-			showMessage(messages, 'Ano de nascimento deve ser menor ou igual a 2025.', 'error');
-			dataNascimento.focus();
-			return;
-		}
 
 		// Regras de unicidade
 		const alunos = loadAlunos();
@@ -858,7 +841,7 @@ function setupCadastro() {
 			matricula: vMatricula,
 			email: vEmail,
 			telefone: vTelefoneDigits,
-			dataNascimento: formatDateToISO(vNascimento),
+			dataNascimento: vNascimento,
 			status: 'Ativo',
 			dataCadastro: new Date().toISOString().slice(0, 10) // yyyy-mm-dd
 		};
@@ -938,13 +921,7 @@ function setupConsulta() {
 	enforceNumericInput(document.getElementById('filtroMatricula'), 4);
 	
 	// Restringe campo Nome para apenas letras
-	if (filtroNome) {
-		filtroNome.addEventListener('input', () => {
-			const raw = filtroNome.value;
-			const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-			if (raw !== cleaned) filtroNome.value = cleaned;
-		});
-	}
+	enforceInputPattern(filtroNome, INPUT_PATTERNS.lettersOnly);
 
 	formFiltro.addEventListener('submit', (e) => {
 		e.preventDefault();
@@ -1004,12 +981,7 @@ function setupModalEdicao() {
 	const messages = document.getElementById('edicao-messages');
 
 	// Restrições
-	nome.addEventListener('input', () => {
-		// Permite letras e números
-		const raw = nome.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
-		if (raw !== cleaned) nome.value = cleaned;
-	});
+	enforceInputPattern(nome, INPUT_PATTERNS.lettersAndNumbers);
 	telefone.addEventListener('input', () => applyPhoneMask(telefone));
 	telefone.addEventListener('blur', () => applyPhoneMask(telefone));
 
@@ -1121,19 +1093,10 @@ function setupEditoraCadastro() {
 
 	enableEnterNavigation(form, validateEditoraForm);
 
-	nome.addEventListener('input', () => {
-		// Permite letras e números
-		const raw = nome.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
-		if (raw !== cleaned) nome.value = cleaned;
-	});
+	enforceInputPattern(nome, INPUT_PATTERNS.lettersAndNumbers);
 	telefone.addEventListener('input', () => applyPhoneEditoraMask(telefone));
 	telefone.addEventListener('blur', () => applyPhoneEditoraMask(telefone));
-	endereco.addEventListener('input', () => {
-		const raw = endereco.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s.,;:!?'"\-()]/gu, '');
-		if (raw !== cleaned) endereco.value = cleaned;
-	});
+	enforceInputPattern(endereco, INPUT_PATTERNS.lettersNumbersPunct);
 
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();
@@ -1295,19 +1258,10 @@ function setupEditoraModalEdicao() {
 	});
 	btnCancelar?.addEventListener('click', () => toggleEditoraModal(false));
 
-	nome?.addEventListener('input', () => {
-		// Permite letras e números
-		const raw = nome.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
-		if (raw !== cleaned) nome.value = cleaned;
-	});
+	enforceInputPattern(nome, INPUT_PATTERNS.lettersAndNumbers);
 	telefone?.addEventListener('input', () => applyPhoneEditoraMask(telefone));
 	telefone?.addEventListener('blur', () => applyPhoneEditoraMask(telefone));
-	endereco?.addEventListener('input', () => {
-		const raw = endereco.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s.,;:!?'"\-()]/gu, '');
-		if (raw !== cleaned) endereco.value = cleaned;
-	});
+	enforceInputPattern(endereco, INPUT_PATTERNS.lettersNumbersPunct);
 
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();
@@ -1418,18 +1372,10 @@ function setupLivroCadastro() {
 	enforceNumericInput(exemplares, 4);
 	enforceNumericInput(ano, 4);
 
-	titulo.addEventListener('input', () => {
-		const raw = titulo.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
-		if (raw !== cleaned) titulo.value = cleaned;
-	});
+	enforceInputPattern(titulo, INPUT_PATTERNS.lettersAndNumbers);
 	isbn.addEventListener('input', () => applyIsbnMask(isbn));
 	isbn.addEventListener('blur', () => applyIsbnMask(isbn));
-	localizacao.addEventListener('input', () => {
-		const raw = localizacao.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s.,;:!?'"\-()]/gu, '');
-		if (raw !== cleaned) localizacao.value = cleaned;
-	});
+	enforceInputPattern(localizacao, INPUT_PATTERNS.lettersNumbersPunct);
 	ano.addEventListener('input', () => {
 		const raw = ano.value;
 		const cleaned = raw.replace(/\D+/g, '').slice(0, 4);
@@ -1612,13 +1558,7 @@ function setupLivroConsulta() {
 	
 	// Restringe campo Autor para apenas letras
 	const filtroLivroAutor = document.getElementById('filtroLivroAutor');
-	if (filtroLivroAutor) {
-		filtroLivroAutor.addEventListener('input', () => {
-			const raw = filtroLivroAutor.value;
-			const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-			if (raw !== cleaned) filtroLivroAutor.value = cleaned;
-		});
-	}
+	enforceInputPattern(filtroLivroAutor, INPUT_PATTERNS.lettersOnly);
 
 	formFiltro.addEventListener('submit', (e) => {
 		e.preventDefault();
@@ -1689,18 +1629,10 @@ function setupLivroModalEdicao() {
 	});
 	btnCancelar?.addEventListener('click', () => toggleLivroModal(false));
 
-	titulo.addEventListener('input', () => {
-		const raw = titulo.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
-		if (raw !== cleaned) titulo.value = cleaned;
-	});
+	enforceInputPattern(titulo, INPUT_PATTERNS.lettersAndNumbers);
 	isbn.addEventListener('input', () => applyIsbnMask(isbn));
 	isbn.addEventListener('blur', () => applyIsbnMask(isbn));
-	localizacao.addEventListener('input', () => {
-		const raw = localizacao.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s.,;:!?'"\-()]/gu, '');
-		if (raw !== cleaned) localizacao.value = cleaned;
-	});
+	enforceInputPattern(localizacao, INPUT_PATTERNS.lettersNumbersPunct);
 	ano.addEventListener('input', () => {
 		const raw = ano.value;
 		const cleaned = raw.replace(/\D+/g, '').slice(0, 4);
@@ -1901,23 +1833,9 @@ function setupAutorCadastro() {
 
 	enableEnterNavigation(form, validateAutorForm);
 
-	nome.addEventListener('input', () => {
-		// Apenas letras para nome de autor
-		const raw = nome.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-		if (raw !== cleaned) nome.value = cleaned;
-	});
-	nacionalidade.addEventListener('input', () => {
-		const raw = nacionalidade.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-		if (raw !== cleaned) nacionalidade.value = cleaned;
-	});
-	biografia.addEventListener('input', () => {
-		// Permite letras e números
-		const raw = biografia.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s.,;:!?'"\-()]/gu, '');
-		if (raw !== cleaned) biografia.value = cleaned;
-	});
+	enforceInputPattern(nome, INPUT_PATTERNS.lettersOnly);
+	enforceInputPattern(nacionalidade, INPUT_PATTERNS.lettersOnly);
+	enforceInputPattern(biografia, INPUT_PATTERNS.lettersNumbersPunct);
 
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();
@@ -2024,22 +1942,9 @@ function setupAutorConsulta() {
 	if (!formFiltro) return;
 	
 	// Restringe campo Nome para apenas letras
-	if (filtroAutorNome) {
-		filtroAutorNome.addEventListener('input', () => {
-			const raw = filtroAutorNome.value;
-			const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-			if (raw !== cleaned) filtroAutorNome.value = cleaned;
-		});
-	}
-	
+	enforceInputPattern(filtroAutorNome, INPUT_PATTERNS.lettersOnly);
 	// Restringe campo Nacionalidade para apenas letras
-	if (filtroAutorNacionalidade) {
-		filtroAutorNacionalidade.addEventListener('input', () => {
-			const raw = filtroAutorNacionalidade.value;
-			const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-			if (raw !== cleaned) filtroAutorNacionalidade.value = cleaned;
-		});
-	}
+	enforceInputPattern(filtroAutorNacionalidade, INPUT_PATTERNS.lettersOnly);
 
 	formFiltro.addEventListener('submit', (e) => {
 		e.preventDefault();
@@ -2090,23 +1995,9 @@ function setupAutorModalEdicao() {
 	});
 	btnCancelar.addEventListener('click', () => toggleAutorModal(false));
 
-	nome.addEventListener('input', () => {
-		// Apenas letras para nome de autor
-		const raw = nome.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-		if (raw !== cleaned) nome.value = cleaned;
-	});
-	nacionalidade.addEventListener('input', () => {
-		const raw = nacionalidade.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\s]/gu, '');
-		if (raw !== cleaned) nacionalidade.value = cleaned;
-	});
-	biografia.addEventListener('input', () => {
-		// Permite letras e números
-		const raw = biografia.value;
-		const cleaned = raw.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}\s.,;:!?'"\-()]/gu, '');
-		if (raw !== cleaned) biografia.value = cleaned;
-	});
+	enforceInputPattern(nome, INPUT_PATTERNS.lettersOnly);
+	enforceInputPattern(nacionalidade, INPUT_PATTERNS.lettersOnly);
+	enforceInputPattern(biografia, INPUT_PATTERNS.lettersNumbersPunct);
 
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();
