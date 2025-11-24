@@ -6,6 +6,14 @@
 
 ###
 
+<h2 align="left">📆 Cronograma</h2>
+
+###
+
+<p align="left">Cronograma (Trello): https://l1nq.com/KiAiv</p>
+
+###
+
 <h2 align="left">📜 Descrição</h2>
 
 ###
