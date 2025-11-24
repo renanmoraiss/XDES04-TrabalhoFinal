@@ -3,11 +3,21 @@ const collator = new Intl.Collator('pt-BR', { sensitivity: 'base' });
 const STORAGE_KEY_AUTORES = 'autores';
 const STORAGE_KEY_EDITORAS = 'editoras';
 const STORAGE_KEY_LIVROS = 'livros';
+const STORAGE_KEY_EMPRESTIMOS = 'emprestimos';
+const STORAGE_KEY_RESERVAS = 'reservas';
+const EMPRESTIMO_STATUS = ['Ativo', 'Devolvido', 'Atrasado', 'Perdido'];
+const RESERVA_STATUS = ['Ativa', 'Cancelada', 'Expirada', 'Concluída'];
+const MAX_EMPRESTIMOS_ATIVOS = 3;
+const MAX_RESERVAS_ATIVAS = 3;
+const EMPRESTIMO_DIAS_PADRAO = 7;
+const RESERVA_DIAS_PADRAO = 5;
 const BOOK_GENRES = [
+	'Ficção',
 	'Ficção Científica',
 	'Fantasia',
 	'Mistério',
 	'Suspense',
+	'Romance',
 	'Romance Contemporâneo',
 	'Romance Histórico',
 	'Thriller Psicológico',
@@ -58,6 +68,8 @@ function loadAlunos() {
 
 function saveAlunos(alunos) {
 	saveToStorage(STORAGE_KEY, alunos);
+	refreshEmprestimoCadastroSelects();
+	refreshReservaCadastroSelects();
 }
 
 function loadAutores() {
@@ -84,6 +96,30 @@ function loadLivros() {
 
 function saveLivros(livros) {
 	saveToStorage(STORAGE_KEY_LIVROS, livros);
+	refreshEmprestimoCadastroSelects();
+	refreshReservaCadastroSelects();
+}
+
+function loadEmprestimos() {
+	return loadFromStorage(STORAGE_KEY_EMPRESTIMOS);
+}
+
+function saveEmprestimos(emprestimos) {
+	saveToStorage(STORAGE_KEY_EMPRESTIMOS, emprestimos);
+	refreshEmprestimoCadastroSelects();
+	refreshReservaCadastroSelects();
+	updateHomeStats();
+}
+
+function loadReservas() {
+	return loadFromStorage(STORAGE_KEY_RESERVAS);
+}
+
+function saveReservas(reservas) {
+	saveToStorage(STORAGE_KEY_RESERVAS, reservas);
+	refreshEmprestimoCadastroSelects();
+	refreshReservaCadastroSelects();
+	updateHomeStats();
 }
 
 
@@ -106,7 +142,7 @@ function formatPhone(value) {
 }
 
 function formatPhoneEditora(value) {
-	const digits = String(value || '').replace(/\D/g, '').slice(0, 13);
+	const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
 	const len = digits.length;
 	if (!len) return '';
 	if (len <= 4) return digits;
@@ -123,7 +159,7 @@ function applyPhoneMask(input) {
 }
 
 function applyPhoneEditoraMask(input) {
-	const digits = input.value.replace(/\D/g, '').slice(0, 13);
+	const digits = input.value.replace(/\D/g, '').slice(0, 11);
 	input.dataset.digits = digits;
 	input.value = formatPhoneEditora(digits);
 }
@@ -357,13 +393,33 @@ const HISTORY_STORAGE_KEYS = {
 	aluno: { edit: 'hist_aluno_edicoes', delete: 'hist_aluno_exclusoes' },
 	autor: { edit: 'hist_autor_edicoes', delete: 'hist_autor_exclusoes' },
 	editora: { edit: 'hist_editora_edicoes', delete: 'hist_editora_exclusoes' },
-	livro: { edit: 'hist_livro_edicoes', delete: 'hist_livro_exclusoes' }
+	livro: { edit: 'hist_livro_edicoes', delete: 'hist_livro_exclusoes' },
+	emprestimo: { edit: 'hist_emprestimo_edicoes', delete: 'hist_emprestimo_exclusoes' },
+	reserva: { edit: 'hist_reserva_edicoes', delete: 'hist_reserva_exclusoes' }
 };
+const RELATORIO_GENEROS_HISTORY_KEY = 'hist_relatorio_generos';
+const RELATORIO_FAIXA_ETARIA_HISTORY_KEY = 'hist_relatorio_faixa_etaria';
+let relatorioPieChart = null;
+let relatorioBarChart = null;
+let relatorioFaixaEtariaBarChart = null;
+const RELATORIO_GENRE_COLORS = [
+	'#5ad1e6', '#1e74bb', '#7d4ea7', '#b943a7', '#f18cc0',
+	'#f6b454', '#68b684', '#5f7adb', '#c6d3e1', '#2c3c5a',
+	'#88bef5', '#f9d162', '#f78c6b', '#69cbc1', '#9c73f8'
+];
+const RELATORIO_CHART_FONT = '"Poppins","Segoe UI",system-ui,-apple-system,sans-serif';
+if (typeof Chart !== 'undefined') {
+	Chart.defaults.font.family = RELATORIO_CHART_FONT;
+	Chart.defaults.color = '#0f172a';
+	Chart.defaults.font.size = 12;
+}
 const ENTITY_LABELS = {
 	aluno: 'Alunos',
 	autor: 'Autores',
 	editora: 'Editoras',
-	livro: 'Livros'
+	livro: 'Livros',
+	emprestimo: 'Empréstimos',
+	reserva: 'Reservas'
 };
 
 function showMessage(el, msg, type = 'error') {
@@ -404,6 +460,366 @@ function cloneRecord(record) {
 	return JSON.parse(JSON.stringify(record));
 }
 
+function findAlunoById(id) {
+	if (!id) return null;
+	return loadAlunos().find(aluno => aluno.id === id) || null;
+}
+
+function findLivroById(id) {
+	if (!id) return null;
+	return loadLivros().find(livro => livro.id === id) || null;
+}
+
+function formatAlunoLabel(aluno) {
+	if (!aluno) return 'Aluno removido';
+	return `${aluno.nome} (Matrícula ${aluno.matricula})`;
+}
+
+function formatLivroLabel(livro) {
+	if (!livro) return 'Livro removido';
+	return `${livro.titulo} (ISBN ${livro.isbn})`;
+}
+
+function isRegistroAtivo(registro) {
+	return registro?.ativo !== false;
+}
+
+function refreshEmprestimoAutomaticStatuses() {
+	const emprestimos = loadEmprestimos();
+	let changed = false;
+	const today = getTodayDateInputValue();
+	for (const emprestimo of emprestimos) {
+		if (emprestimo.ativo === false) continue;
+		if (emprestimo.status === 'Devolvido' || emprestimo.status === 'Perdido') continue;
+		if (emprestimo.dataDevolucaoPrevista) {
+			// Atualizar para 'Atrasado' se a data foi ultrapassada
+			if ((emprestimo.status === 'Ativo' || emprestimo.status === 'Atrasado') && emprestimo.dataDevolucaoPrevista < today) {
+				if (emprestimo.status !== 'Atrasado') {
+					emprestimo.status = 'Atrasado';
+					changed = true;
+				}
+			} else if (emprestimo.status === 'Atrasado' && emprestimo.dataDevolucaoPrevista >= today) {
+				// Corrigir status se não deveria estar atrasado
+				emprestimo.status = 'Ativo';
+				changed = true;
+			}
+		}
+	}
+	if (changed) saveEmprestimos(emprestimos);
+	return emprestimos;
+}
+
+function refreshReservaAutomaticStatuses() {
+	const reservas = loadReservas();
+	let changed = false;
+	const today = getTodayDateInputValue();
+	for (const reserva of reservas) {
+		if (reserva.ativo === false) continue;
+		if (reserva.status === 'Cancelada' || reserva.status === 'Concluída') continue;
+		if (reserva.dataExpiracao) {
+			// Atualizar para 'Expirada' se a data foi ultrapassada
+			if ((reserva.status === 'Ativa' || reserva.status === 'Expirada') && reserva.dataExpiracao < today) {
+				if (reserva.status !== 'Expirada') {
+					reserva.status = 'Expirada';
+					changed = true;
+				}
+			} else if (reserva.status === 'Expirada' && reserva.dataExpiracao >= today) {
+				// Corrigir status se não deveria estar expirada
+				reserva.status = 'Ativa';
+				changed = true;
+			}
+		}
+	}
+	if (changed) saveReservas(reservas);
+	return reservas;
+}
+
+function countEmprestimosAtivosAluno(alunoId) {
+	if (!alunoId) return 0;
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	return emprestimos.filter(e => e.alunoId === alunoId && isRegistroAtivo(e) && e.status === 'Ativo').length;
+}
+
+function alunoPossuiEmprestimoAtrasado(alunoId) {
+	if (!alunoId) return false;
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	return emprestimos.some(e => e.alunoId === alunoId && isRegistroAtivo(e) && e.status === 'Atrasado');
+}
+
+function alunoPossuiPendencias(alunoId) {
+	if (!alunoId) return false;
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	return emprestimos.some(e =>
+		e.alunoId === alunoId &&
+		isRegistroAtivo(e) &&
+		['Ativo', 'Atrasado', 'Perdido'].includes(e.status)
+	);
+}
+
+function livroCopiasDisponiveis(livroId) {
+	const livro = findLivroById(livroId);
+	if (!livro) return 0;
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	const emprestados = emprestimos.filter(e =>
+		e.livroId === livroId &&
+		isRegistroAtivo(e) &&
+		(e.status === 'Ativo' || e.status === 'Atrasado')
+	).length;
+	const total = Number(livro.exemplares) || 0;
+	return Math.max(0, total - emprestados);
+}
+
+function countReservasAtivasAluno(alunoId) {
+	if (!alunoId) return 0;
+	const reservas = refreshReservaAutomaticStatuses();
+	return reservas.filter(r => r.alunoId === alunoId && isRegistroAtivo(r) && r.status === 'Ativa').length;
+}
+
+function existeReservaAtivaParaLivro(livroId, alunoId) {
+	if (!livroId) return { possui: false, reservadaPorOutro: false, reservaDoAluno: null };
+	const reservas = refreshReservaAutomaticStatuses();
+	let reservadaPorOutro = false;
+	let reservaDoAluno = null;
+	for (const reserva of reservas) {
+		if (!isRegistroAtivo(reserva)) continue;
+		if (reserva.livroId !== livroId) continue;
+		if (reserva.status !== 'Ativa') continue;
+		if (alunoId && reserva.alunoId === alunoId) {
+			reservaDoAluno = reserva;
+		} else {
+			reservadaPorOutro = true;
+		}
+	}
+	return {
+		possui: reservadaPorOutro || Boolean(reservaDoAluno),
+		reservadaPorOutro,
+		reservaDoAluno
+	};
+}
+
+function existeReservaAtivaDuplicada(alunoId, livroId) {
+	if (!alunoId || !livroId) return false;
+	const reservas = refreshReservaAutomaticStatuses();
+	return reservas.some(r =>
+		isRegistroAtivo(r) &&
+		r.alunoId === alunoId &&
+		r.livroId === livroId &&
+		r.status === 'Ativa'
+	);
+}
+
+function livroTemEspacoParaReserva(livroId) {
+	const livro = findLivroById(livroId);
+	if (!livro) return false;
+	const reservas = refreshReservaAutomaticStatuses();
+	const reservadas = reservas.filter(r =>
+		isRegistroAtivo(r) &&
+		r.livroId === livroId &&
+		r.status === 'Ativa'
+	).length;
+	const total = Number(livro.exemplares) || 0;
+	return reservadas < total;
+}
+
+function populateEmprestimoAlunoSelect(select) {
+	if (!select) return;
+	const alunos = loadAlunos().filter(a => a.status === 'Ativo');
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	const ativosPorAluno = new Map();
+	const atrasadosPorAluno = new Set();
+	for (const emprestimo of emprestimos) {
+		if (!isRegistroAtivo(emprestimo) || !emprestimo.alunoId) continue;
+		if (emprestimo.status === 'Ativo') {
+			ativosPorAluno.set(emprestimo.alunoId, (ativosPorAluno.get(emprestimo.alunoId) || 0) + 1);
+		}
+		if (emprestimo.status === 'Atrasado') {
+			atrasadosPorAluno.add(emprestimo.alunoId);
+		}
+	}
+	const fragment = document.createDocumentFragment();
+	const placeholder = document.createElement('option');
+	placeholder.value = '';
+	placeholder.textContent = 'Selecione um aluno ativo';
+	fragment.appendChild(placeholder);
+	for (const aluno of alunos) {
+		const option = document.createElement('option');
+		option.value = aluno.id;
+		const emprestimosAtivos = ativosPorAluno.get(aluno.id) || 0;
+		const temAtraso = atrasadosPorAluno.has(aluno.id);
+		option.textContent = `${aluno.nome} • Matrícula ${aluno.matricula}${emprestimosAtivos ? ` • ${emprestimosAtivos} ativo(s)` : ''}`;
+		if (temAtraso) {
+			option.disabled = true;
+			option.textContent += ' • Pendências em aberto';
+		} else if (emprestimosAtivos >= MAX_EMPRESTIMOS_ATIVOS) {
+			option.disabled = true;
+			option.textContent += ` • Limite (${MAX_EMPRESTIMOS_ATIVOS}) atingido`;
+		}
+		fragment.appendChild(option);
+	}
+	select.innerHTML = '';
+	select.appendChild(fragment);
+}
+
+function populateEmprestimoLivroSelect(select) {
+	if (!select) return;
+	const livros = loadLivros();
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	const reservas = refreshReservaAutomaticStatuses();
+	const emprestimosPorLivro = new Map();
+	for (const emprestimo of emprestimos) {
+		if (!isRegistroAtivo(emprestimo) || !emprestimo.livroId) continue;
+		if (emprestimo.status === 'Ativo' || emprestimo.status === 'Atrasado') {
+			emprestimosPorLivro.set(emprestimo.livroId, (emprestimosPorLivro.get(emprestimo.livroId) || 0) + 1);
+		}
+	}
+	const reservasPorLivro = new Map();
+	for (const reserva of reservas) {
+		if (!isRegistroAtivo(reserva) || reserva.status !== 'Ativa' || !reserva.livroId) continue;
+		reservasPorLivro.set(reserva.livroId, (reservasPorLivro.get(reserva.livroId) || 0) + 1);
+	}
+	const fragment = document.createDocumentFragment();
+	const placeholder = document.createElement('option');
+	placeholder.value = '';
+	placeholder.textContent = 'Selecione um livro';
+	fragment.appendChild(placeholder);
+	for (const livro of livros) {
+		const option = document.createElement('option');
+		option.value = livro.id;
+		const total = Number(livro.exemplares) || 0;
+		const emprestados = emprestimosPorLivro.get(livro.id) || 0;
+		const disponiveis = Math.max(0, total - emprestados);
+		const reservasAtivas = reservasPorLivro.get(livro.id) || 0;
+		option.textContent = `${livro.titulo} • ISBN ${livro.isbn} • Disp.: ${disponiveis}`;
+		if (disponiveis <= 0) {
+			option.disabled = true;
+			option.textContent += ' • Sem exemplares';
+		}
+		if (reservasAtivas > 0) {
+			option.textContent += ` • ${reservasAtivas} reserva(s) ativa(s)`;
+		}
+		fragment.appendChild(option);
+	}
+	select.innerHTML = '';
+	select.appendChild(fragment);
+}
+
+function populateReservaAlunoSelect(select) {
+	if (!select) return;
+	const alunos = loadAlunos().filter(a => a.status === 'Ativo');
+	const reservas = refreshReservaAutomaticStatuses();
+	const reservasPorAluno = new Map();
+	for (const reserva of reservas) {
+		if (!isRegistroAtivo(reserva) || reserva.status !== 'Ativa' || !reserva.alunoId) continue;
+		reservasPorAluno.set(reserva.alunoId, (reservasPorAluno.get(reserva.alunoId) || 0) + 1);
+	}
+	const fragment = document.createDocumentFragment();
+	const placeholder = document.createElement('option');
+	placeholder.value = '';
+	placeholder.textContent = 'Selecione um aluno ativo';
+	fragment.appendChild(placeholder);
+	for (const aluno of alunos) {
+		const option = document.createElement('option');
+		option.value = aluno.id;
+		const reservasAtivas = reservasPorAluno.get(aluno.id) || 0;
+		option.textContent = `${aluno.nome} • Matrícula ${aluno.matricula}${reservasAtivas ? ` • ${reservasAtivas} reserva(s)` : ''}`;
+		if (reservasAtivas >= MAX_RESERVAS_ATIVAS) {
+			option.disabled = true;
+			option.textContent += ` • Limite (${MAX_RESERVAS_ATIVAS}) atingido`;
+		}
+		fragment.appendChild(option);
+	}
+	select.innerHTML = '';
+	select.appendChild(fragment);
+}
+
+function populateReservaLivroSelect(select) {
+	if (!select) return;
+	const livros = loadLivros();
+	const reservas = refreshReservaAutomaticStatuses();
+	const reservasPorLivro = new Map();
+	for (const reserva of reservas) {
+		if (!isRegistroAtivo(reserva) || reserva.status !== 'Ativa' || !reserva.livroId) continue;
+		reservasPorLivro.set(reserva.livroId, (reservasPorLivro.get(reserva.livroId) || 0) + 1);
+	}
+	const fragment = document.createDocumentFragment();
+	const placeholder = document.createElement('option');
+	placeholder.value = '';
+	placeholder.textContent = 'Selecione um livro';
+	fragment.appendChild(placeholder);
+	for (const livro of livros) {
+		const option = document.createElement('option');
+		option.value = livro.id;
+		const total = Number(livro.exemplares) || 0;
+		const reservasAtivas = reservasPorLivro.get(livro.id) || 0;
+		option.textContent = `${livro.titulo} • ISBN ${livro.isbn} • Reservas: ${reservasAtivas}/${total}`;
+		if (reservasAtivas >= total) {
+			option.disabled = true;
+			option.textContent += ' • Sem vagas para reserva';
+		}
+		fragment.appendChild(option);
+	}
+	select.innerHTML = '';
+	select.appendChild(fragment);
+}
+
+function refreshEmprestimoCadastroSelects() {
+	populateEmprestimoAlunoSelect(document.getElementById('emprestimoAluno'));
+	populateEmprestimoLivroSelect(document.getElementById('emprestimoLivro'));
+}
+
+function refreshReservaCadastroSelects() {
+	populateReservaAlunoSelect(document.getElementById('reservaAluno'));
+	populateReservaLivroSelect(document.getElementById('reservaLivro'));
+}
+
+function livroPossuiEmprestimosPendentes(livroId) {
+	if (!livroId) return false;
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	return emprestimos.some(e =>
+		e.livroId === livroId &&
+		isRegistroAtivo(e) &&
+		['Ativo', 'Atrasado', 'Perdido'].includes(e.status)
+	);
+}
+
+function resetEmprestimoCadastroDefaults(force = false) {
+	const dataInput = document.getElementById('emprestimoData');
+	const dataPrevistaInput = document.getElementById('emprestimoDataPrevista');
+	const statusSelect = document.getElementById('emprestimoStatus');
+	if (dataInput) {
+		const now = nowIsoString();
+		dataInput.value = formatDateTimeDisplay(now);
+		dataInput.dataset.iso = now;
+		dataInput.required = true;
+	}
+	if (dataPrevistaInput && (force || !dataPrevistaInput.value)) {
+		dataPrevistaInput.value = dateToInputValue(addDays(new Date(), EMPRESTIMO_DIAS_PADRAO));
+	}
+	if (statusSelect) {
+		statusSelect.required = true;
+		if (force || !statusSelect.value) statusSelect.value = 'Ativo';
+	}
+}
+
+function resetReservaCadastroDefaults(force = false) {
+	const dataInput = document.getElementById('reservaData');
+	const dataExpiracaoInput = document.getElementById('reservaDataExpiracao');
+	const statusSelect = document.getElementById('reservaStatus');
+	if (dataInput) {
+		const now = nowIsoString();
+		dataInput.value = formatDateTimeDisplay(now);
+		dataInput.dataset.iso = now;
+		dataInput.required = true;
+	}
+	if (dataExpiracaoInput && (force || !dataExpiracaoInput.value)) {
+		dataExpiracaoInput.value = dateToInputValue(addDays(new Date(), RESERVA_DIAS_PADRAO));
+	}
+	if (statusSelect) {
+		statusSelect.required = true;
+		if (force || !statusSelect.value) statusSelect.value = 'Ativa';
+	}
+}
+
 function formatDateTimeDisplay(iso) {
 	if (!iso) return '';
 	const date = new Date(iso);
@@ -415,6 +831,28 @@ function formatDateTimeDisplay(iso) {
 		hour: '2-digit',
 		minute: '2-digit'
 	});
+}
+
+function getTodayDateInputValue() {
+	const now = new Date();
+	const tzAdjusted = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+	return tzAdjusted.toISOString().slice(0, 10);
+}
+
+function dateToInputValue(date) {
+	if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+	const tzAdjusted = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+	return tzAdjusted.toISOString().slice(0, 10);
+}
+
+function addDays(date, days) {
+	const result = new Date(date);
+	result.setDate(result.getDate() + days);
+	return result;
+}
+
+function nowIsoString() {
+	return new Date().toISOString();
 }
 
 function loadHistoryEntries(entity, type) {
@@ -485,6 +923,31 @@ function getEntityDisplayData(entity, record) {
 				snapshot['Exemplares'] = record.exemplares;
 				snapshot['Ano de Publicação'] = record.anoPublicacao || '';
 				snapshot['Localização Física'] = record.localizacao || '';
+			}
+			break;
+		case 'emprestimo':
+			{
+				const aluno = findAlunoById(record.alunoId);
+				const livro = findLivroById(record.livroId);
+				snapshot['Aluno'] = formatAlunoLabel(aluno);
+				snapshot['Livro'] = formatLivroLabel(livro);
+				snapshot['Data de Empréstimo'] = formatDateTimeDisplay(record.dataEmprestimo);
+				snapshot['Data de Devolução Prevista'] = formatDateToDisplay(record.dataDevolucaoPrevista);
+				if (record.dataDevolucaoReal) {
+					snapshot['Data de Devolução Real'] = formatDateTimeDisplay(record.dataDevolucaoReal);
+				}
+				snapshot['Status'] = record.status;
+			}
+			break;
+		case 'reserva':
+			{
+				const aluno = findAlunoById(record.alunoId);
+				const livro = findLivroById(record.livroId);
+				snapshot['Aluno'] = formatAlunoLabel(aluno);
+				snapshot['Livro'] = formatLivroLabel(livro);
+				snapshot['Data de Reserva'] = formatDateTimeDisplay(record.dataReserva);
+				snapshot['Data de Expiração'] = formatDateToDisplay(record.dataExpiracao);
+				snapshot['Status'] = record.status;
 			}
 			break;
 		default:
@@ -576,6 +1039,36 @@ function formatHistoryChanges(changes = []) {
 	return fragments.join('');
 }
 
+function loadRelatorioGenerosHistory() {
+	try {
+		const raw = localStorage.getItem(RELATORIO_GENEROS_HISTORY_KEY);
+		if (!raw) return [];
+		const list = JSON.parse(raw);
+		return Array.isArray(list) ? list : [];
+	} catch {
+		return [];
+	}
+}
+
+function saveRelatorioGenerosHistory(entries) {
+	localStorage.setItem(RELATORIO_GENEROS_HISTORY_KEY, JSON.stringify(entries));
+}
+
+function loadRelatorioFaixaEtariaHistory() {
+	try {
+		const raw = localStorage.getItem(RELATORIO_FAIXA_ETARIA_HISTORY_KEY);
+		if (!raw) return [];
+		const list = JSON.parse(raw);
+		return Array.isArray(list) ? list : [];
+	} catch {
+		return [];
+	}
+}
+
+function saveRelatorioFaixaEtariaHistory(entries) {
+	localStorage.setItem(RELATORIO_FAIXA_ETARIA_HISTORY_KEY, JSON.stringify(entries));
+}
+
 function toggleHistoryModal(show) {
 	const overlay = document.getElementById('history-overlay');
 	if (!overlay) return;
@@ -601,10 +1094,14 @@ function updateHomeStats() {
 	const elAutores = document.getElementById('stat-total-autores');
 	const elEditoras = document.getElementById('stat-total-editoras');
 	const elLivros = document.getElementById('stat-total-livros');
+	const elEmprestimos = document.getElementById('stat-total-emprestimos');
+	const elReservas = document.getElementById('stat-total-reservas');
 	if (elAlunos) elAlunos.textContent = String(loadAlunos().length);
 	if (elAutores) elAutores.textContent = String(loadAutores().length);
 	if (elEditoras) elEditoras.textContent = String(loadEditoras().length);
 	if (elLivros) elLivros.textContent = String(loadLivros().length);
+	if (elEmprestimos) elEmprestimos.textContent = String(loadEmprestimos().filter(isRegistroAtivo).length);
+	if (elReservas) elReservas.textContent = String(loadReservas().filter(isRegistroAtivo).length);
 }
 
 // Navegação simples por hash
@@ -620,6 +1117,12 @@ function updateViewFromHash() {
 	const livroCadastroTab = document.getElementById('tab-livro-cadastro');
 	const livroConsultaTab = document.getElementById('tab-livro-consulta');
 	const instituicaoTab = document.getElementById('tab-instituicao');
+	const relatoriosTab = document.getElementById('tab-relatorios');
+	const relatoriosFaixaEtariaTab = document.getElementById('tab-relatorios-faixa-etaria');
+	const emprestimoCadastroTab = document.getElementById('tab-emprestimo-cadastro');
+	const emprestimoConsultaTab = document.getElementById('tab-emprestimo-consulta');
+	const reservaCadastroTab = document.getElementById('tab-reserva-cadastro');
+	const reservaConsultaTab = document.getElementById('tab-reserva-consulta');
 	const homeView = document.getElementById('view-home');
 	const cadastroView = document.getElementById('view-cadastro');
 	const consultaView = document.getElementById('view-consulta');
@@ -630,6 +1133,12 @@ function updateViewFromHash() {
 	const livroCadastroView = document.getElementById('view-livro-cadastro');
 	const livroConsultaView = document.getElementById('view-livro-consulta');
 	const instituicaoView = document.getElementById('view-instituicao');
+	const emprestimoCadastroView = document.getElementById('view-emprestimo-cadastro');
+	const emprestimoConsultaView = document.getElementById('view-emprestimo-consulta');
+	const reservaCadastroView = document.getElementById('view-reserva-cadastro');
+	const reservaConsultaView = document.getElementById('view-reserva-consulta');
+	const relatoriosView = document.getElementById('view-relatorios');
+	const relatoriosFaixaEtariaView = document.getElementById('view-relatorios-faixa-etaria');
 
 	homeTab.classList.remove('active');
 	cadastroTab.classList.remove('active');
@@ -641,6 +1150,12 @@ function updateViewFromHash() {
 	if (livroCadastroTab) livroCadastroTab.classList.remove('active');
 	if (livroConsultaTab) livroConsultaTab.classList.remove('active');
 	if (instituicaoTab) instituicaoTab.classList.remove('active');
+	if (emprestimoCadastroTab) emprestimoCadastroTab.classList.remove('active');
+	if (emprestimoConsultaTab) emprestimoConsultaTab.classList.remove('active');
+	if (reservaCadastroTab) reservaCadastroTab.classList.remove('active');
+	if (reservaConsultaTab) reservaConsultaTab.classList.remove('active');
+	if (relatoriosTab) relatoriosTab.classList.remove('active');
+	if (relatoriosFaixaEtariaTab) relatoriosFaixaEtariaTab.classList.remove('active');
 	homeView.classList.add('hidden');
 	cadastroView.classList.add('hidden');
 	consultaView.classList.add('hidden');
@@ -651,6 +1166,12 @@ function updateViewFromHash() {
 	if (livroCadastroView) livroCadastroView.classList.add('hidden');
 	if (livroConsultaView) livroConsultaView.classList.add('hidden');
 	if (instituicaoView) instituicaoView.classList.add('hidden');
+	if (emprestimoCadastroView) emprestimoCadastroView.classList.add('hidden');
+	if (emprestimoConsultaView) emprestimoConsultaView.classList.add('hidden');
+	if (reservaCadastroView) reservaCadastroView.classList.add('hidden');
+	if (reservaConsultaView) reservaConsultaView.classList.add('hidden');
+	if (relatoriosView) relatoriosView.classList.add('hidden');
+	if (relatoriosFaixaEtariaView) relatoriosFaixaEtariaView.classList.add('hidden');
 
 	if (hash.startsWith('#/aluno/consulta')) {
 		consultaTab.classList.add('active');
@@ -698,6 +1219,56 @@ function updateViewFromHash() {
 	if (hash.startsWith('#/livro/cadastro')) {
 		if (livroCadastroTab) livroCadastroTab.classList.add('active');
 		if (livroCadastroView) livroCadastroView.classList.remove('hidden');
+		return;
+	}
+	if (hash.startsWith('#/emprestimo/consulta')) {
+		if (emprestimoConsultaTab) emprestimoConsultaTab.classList.add('active');
+		if (emprestimoConsultaView) {
+			emprestimoConsultaView.classList.remove('hidden');
+			renderTabelaEmprestimos();
+		}
+		return;
+	}
+	if (hash.startsWith('#/emprestimo/cadastro')) {
+		if (emprestimoCadastroTab) emprestimoCadastroTab.classList.add('active');
+		if (emprestimoCadastroView) {
+			emprestimoCadastroView.classList.remove('hidden');
+			refreshEmprestimoCadastroSelects();
+			resetEmprestimoCadastroDefaults(true);
+		}
+		return;
+	}
+	if (hash.startsWith('#/reserva/consulta')) {
+		if (reservaConsultaTab) reservaConsultaTab.classList.add('active');
+		if (reservaConsultaView) {
+			reservaConsultaView.classList.remove('hidden');
+			renderTabelaReservas();
+		}
+		return;
+	}
+	if (hash.startsWith('#/reserva/cadastro')) {
+		if (reservaCadastroTab) reservaCadastroTab.classList.add('active');
+		if (reservaCadastroView) {
+			reservaCadastroView.classList.remove('hidden');
+			refreshReservaCadastroSelects();
+			resetReservaCadastroDefaults(true);
+		}
+		return;
+	}
+	if (hash.startsWith('#/relatorios-faixa-etaria')) {
+		if (relatoriosFaixaEtariaTab) relatoriosFaixaEtariaTab.classList.add('active');
+		if (relatoriosFaixaEtariaView) {
+			relatoriosFaixaEtariaView.classList.remove('hidden');
+			renderRelatorioFaixaEtariaHistory();
+		}
+		return;
+	}
+	if (hash.startsWith('#/relatorios')) {
+		if (relatoriosTab) relatoriosTab.classList.add('active');
+		if (relatoriosView) {
+			relatoriosView.classList.remove('hidden');
+			renderRelatorioGenerosHistory();
+		}
 		return;
 	}
 	if (hash.startsWith('#/instituicao') && instituicaoView) {
@@ -863,6 +1434,16 @@ function aplicarFiltros(alunos) {
 	const nome = document.getElementById('filtroNome').value.trim();
 	const matricula = document.getElementById('filtroMatricula').value.trim();
 	const status = document.getElementById('filtroStatus').value;
+	const pendenciasFiltro = document.getElementById('filtroPendencias')?.value || '';
+	let pendenciasSet = null;
+	if (pendenciasFiltro) {
+		const emprestimos = refreshEmprestimoAutomaticStatuses();
+		pendenciasSet = new Set(
+			emprestimos
+				.filter(e => isRegistroAtivo(e) && ['Ativo', 'Atrasado', 'Perdido'].includes(e.status))
+				.map(e => e.alunoId)
+		);
+	}
 
 	let resultado = alunos;
 
@@ -875,6 +1456,12 @@ function aplicarFiltros(alunos) {
 	}
 	if (status) {
 		resultado = resultado.filter(a => a.status === status);
+	}
+	if (pendenciasFiltro) {
+		resultado = resultado.filter((aluno) => {
+			const temPendencia = pendenciasSet?.has(aluno.id);
+			return pendenciasFiltro === 'com' ? temPendencia : !temPendencia;
+		});
 	}
 
 	// Ordenação alfabética por nome
@@ -932,6 +1519,8 @@ function setupConsulta() {
 		document.getElementById('filtroNome').value = '';
 		document.getElementById('filtroMatricula').value = '';
 		document.getElementById('filtroStatus').value = '';
+		const pendenciasSelect = document.getElementById('filtroPendencias');
+		if (pendenciasSelect) pendenciasSelect.value = '';
 		renderTabela();
 	});
 
@@ -1051,6 +1640,10 @@ function excluirAluno(id) {
 	const alunos = loadAlunos();
 	const aluno = alunos.find(a => a.id === id);
 	if (!aluno) return;
+	if (alunoPossuiPendencias(aluno.id)) {
+		alert('Não é possível excluir o aluno porque existem pendências de empréstimo (ativo, atrasado, perdido ou multa). Regularize as pendências e altere o status para Inativo antes de excluir.');
+		return;
+	}
 	const ok = confirm(`Excluir o aluno "${aluno.nome}"? Esta ação não pode ser desfeita.`);
 	if (!ok) return;
 	recordHistory('aluno', 'delete', aluno);
@@ -1116,8 +1709,8 @@ function setupEditoraCadastro() {
 			nome.focus();
 			return;
 		}
-		if (!vTelefoneDigits || !digitsRegex.test(vTelefoneDigits) || vTelefoneDigits.length > 13) {
-			showMessage(messages, 'Telefone de Contato é obrigatório, deve conter apenas números e ter no máximo 13 dígitos.', 'error');
+		if (!vTelefoneDigits || !digitsRegex.test(vTelefoneDigits) || vTelefoneDigits.length !== 11) {
+			showMessage(messages, 'Telefone de Contato é obrigatório e deve preencher todos os 11 dígitos (formato XXXX XXX XXXX).', 'error');
 			telefone.focus();
 			return;
 		}
@@ -1282,8 +1875,8 @@ function setupEditoraModalEdicao() {
 			nome.focus();
 			return;
 		}
-		if (!vTelefoneDigits || !digitsRegex.test(vTelefoneDigits) || vTelefoneDigits.length > 13) {
-			showMessage(messages, 'Telefone de Contato é obrigatório, deve conter apenas números e ter no máximo 13 dígitos.', 'error');
+		if (!vTelefoneDigits || !digitsRegex.test(vTelefoneDigits) || vTelefoneDigits.length !== 11) {
+			showMessage(messages, 'Telefone de Contato é obrigatório e deve preencher todos os 11 dígitos (formato XXXX XXX XXXX).', 'error');
 			telefone.focus();
 			return;
 		}
@@ -1748,6 +2341,10 @@ function excluirLivro(id) {
 	const livros = loadLivros();
 	const livro = livros.find(l => l.id === id);
 	if (!livro) return;
+	if (livroPossuiEmprestimosPendentes(livro.id)) {
+		alert('Não é possível excluir este livro porque existem empréstimos em andamento (Ativo, Atrasado ou Perdido) associados a ele. Aguarde a regularização de todos os exemplares.');
+		return;
+	}
 	const ok = confirm(`Excluir o livro "${livro.titulo}"? Esta ação não pode ser desfeita.`);
 	if (!ok) return;
 	recordHistory('livro', 'delete', livro);
@@ -1759,6 +2356,8 @@ function excluirLivro(id) {
 
 // Inicialização
 window.addEventListener('DOMContentLoaded', () => {
+	refreshEmprestimoAutomaticStatuses();
+	refreshReservaAutomaticStatuses();
 	updateViewFromHash();
 	setupCadastro();
 	setupConsulta();
@@ -1773,6 +2372,16 @@ window.addEventListener('DOMContentLoaded', () => {
 	setupLivroCadastro();
 	setupLivroConsulta();
 	setupLivroModalEdicao();
+	refreshEmprestimoCadastroSelects();
+	refreshReservaCadastroSelects();
+	setupEmprestimoCadastro();
+	setupEmprestimoConsulta();
+	setupEmprestimoModalEdicao();
+	setupReservaCadastro();
+	setupReservaConsulta();
+	setupReservaModalEdicao();
+	setupRelatorioGeneros();
+	setupRelatorioFaixaEtaria();
 	setupHistoryUI();
 	updateHomeStats();
 
@@ -2077,4 +2686,1524 @@ function excluirAutor(id) {
 	saveAutores(restantes);
 	renderTabelaAutores();
 	updateHomeStats();
+}
+
+// ==== EMPRESTIMOS ====
+function validarAlunoParaEmprestimo(alunoId) {
+	if (!alunoId) return 'Selecione um aluno.';
+	const aluno = findAlunoById(alunoId);
+	if (!aluno) return 'Aluno não encontrado.';
+	if (aluno.status !== 'Ativo') return 'Somente alunos com status Ativo podem realizar empréstimos.';
+	if (aluno.status === 'Suspenso') return 'Alunos suspensos não podem realizar empréstimos.';
+	if (alunoPossuiEmprestimoAtrasado(alunoId)) return 'O aluno possui empréstimos atrasados.';
+	if (countEmprestimosAtivosAluno(alunoId) >= MAX_EMPRESTIMOS_ATIVOS) {
+		return `Limite de ${MAX_EMPRESTIMOS_ATIVOS} empréstimos ativos atingido para este aluno.`;
+	}
+	return '';
+}
+
+function validarLivroParaEmprestimo(livroId, alunoId) {
+	if (!livroId) return 'Selecione um livro.';
+	const livro = findLivroById(livroId);
+	if (!livro) return 'Livro não encontrado.';
+	const disponiveis = livroCopiasDisponiveis(livroId);
+	if (disponiveis <= 0) return 'Não há exemplares disponíveis para empréstimo.';
+	const reservaInfo = existeReservaAtivaParaLivro(livroId, alunoId);
+	if (reservaInfo.reservadaPorOutro) return 'O livro está reservado para outro aluno.';
+	return '';
+}
+
+function setupEmprestimoCadastro() {
+	const form = document.getElementById('form-emprestimo-cadastro');
+	if (!form) return;
+	const alunoSelect = document.getElementById('emprestimoAluno');
+	const livroSelect = document.getElementById('emprestimoLivro');
+	const dataEmprestimoInput = document.getElementById('emprestimoData');
+	const dataPrevistaInput = document.getElementById('emprestimoDataPrevista');
+	const statusSelect = document.getElementById('emprestimoStatus');
+	const messages = document.getElementById('emprestimo-cadastro-messages');
+
+	refreshEmprestimoCadastroSelects();
+	resetEmprestimoCadastroDefaults(true);
+	showMessage(messages, '', 'success');
+
+	alunoSelect?.addEventListener('change', () => {
+		const error = validarAlunoParaEmprestimo(alunoSelect.value);
+		if (error) showMessage(messages, error, 'error'); else showMessage(messages, '', 'success');
+	});
+	livroSelect?.addEventListener('change', () => {
+		const alunoId = alunoSelect.value;
+		if (!alunoId) return;
+		const error = validarLivroParaEmprestimo(livroSelect.value, alunoId);
+		if (error) showMessage(messages, error, 'error'); else showMessage(messages, '', 'success');
+	});
+
+	form.addEventListener('reset', () => {
+		setTimeout(() => {
+			refreshEmprestimoCadastroSelects();
+			resetEmprestimoCadastroDefaults(true);
+			showMessage(messages, '', 'success');
+		}, 0);
+	});
+
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		const alunoId = alunoSelect.value;
+		const livroId = livroSelect.value;
+		const dataPrevista = dataPrevistaInput.value;
+		const status = statusSelect.value || 'Ativo';
+
+		if (!dataPrevista) {
+			showMessage(messages, 'Informe a data de devolução prevista.', 'error');
+			dataPrevistaInput.focus();
+			return;
+		}
+		const alunoError = validarAlunoParaEmprestimo(alunoId);
+		if (alunoError) {
+			showMessage(messages, alunoError, 'error');
+			alunoSelect.focus();
+			return;
+		}
+		const livroError = validarLivroParaEmprestimo(livroId, alunoId);
+		if (livroError) {
+			showMessage(messages, livroError, 'error');
+			livroSelect.focus();
+			return;
+		}
+		if (!EMPRESTIMO_STATUS.includes(status)) {
+			showMessage(messages, 'Selecione um status de empréstimo válido.', 'error');
+			statusSelect.focus();
+			return;
+		}
+		const hoje = getTodayDateInputValue();
+		// Validar que status 'Atrasado' só pode ser usado se a data prevista for ultrapassada
+		if (status === 'Atrasado' && dataPrevista >= hoje) {
+			showMessage(messages, 'O status "Atrasado" só pode ser usado quando a data de devolução prevista for ultrapassada.', 'error');
+			statusSelect.focus();
+			return;
+		}
+		// Para outros status, a data prevista não pode ser anterior à data atual
+		if (status !== 'Atrasado' && dataPrevista < hoje) {
+			showMessage(messages, 'A data prevista não pode ser anterior à data atual.', 'error');
+			dataPrevistaInput.focus();
+			return;
+		}
+		const emprestimos = refreshEmprestimoAutomaticStatuses();
+		const novoEmprestimo = {
+			id: generateId(),
+			alunoId,
+			livroId,
+			status,
+			dataEmprestimo: dataEmprestimoInput.dataset.iso || nowIsoString(),
+			dataDevolucaoPrevista: dataPrevista,
+			dataDevolucaoReal: status === 'Devolvido' ? nowIsoString() : '',
+			ativo: true,
+			criadoEm: nowIsoString()
+		};
+		emprestimos.push(novoEmprestimo);
+		saveEmprestimos(emprestimos);
+		concluirReservaRelacionada(alunoId, livroId);
+		showMessage(messages, 'Empréstimo registrado com sucesso!', 'success');
+		form.reset();
+		refreshEmprestimoCadastroSelects();
+		resetEmprestimoCadastroDefaults(true);
+		showMessage(messages, '', 'success');
+		renderTabelaEmprestimos();
+		updateHomeStats();
+		setTimeout(() => {
+			window.location.hash = '#/emprestimo/consulta';
+		}, 300);
+	});
+}
+
+function concluirReservaRelacionada(alunoId, livroId) {
+	if (!alunoId || !livroId) return;
+	const reservas = refreshReservaAutomaticStatuses();
+	const idx = reservas.findIndex(r =>
+		isRegistroAtivo(r) &&
+		r.alunoId === alunoId &&
+		r.livroId === livroId &&
+		r.status === 'Ativa'
+	);
+	if (idx === -1) return;
+	const previous = cloneRecord(reservas[idx]);
+	reservas[idx] = {
+		...reservas[idx],
+		status: 'Concluída',
+		dataConclusao: nowIsoString()
+	};
+	recordHistory('reserva', 'edit', reservas[idx], previous);
+	saveReservas(reservas);
+}
+
+function aplicarFiltrosEmprestimos(emprestimos, alunosMap, livrosMap, autoresMap) {
+	const alunoTerm = document.getElementById('filtroEmprestimoAluno')?.value.trim().toLocaleLowerCase() || '';
+	const livroTerm = document.getElementById('filtroEmprestimoLivro')?.value.trim().toLocaleLowerCase() || '';
+	const statusFilter = document.getElementById('filtroEmprestimoStatus')?.value || '';
+	const dataPrevista = document.getElementById('filtroEmprestimoDataPrevista')?.value || '';
+	const apenasAtrasados = document.getElementById('filtroEmprestimoAtrasado')?.checked || false;
+
+	return emprestimos.filter((emprestimo) => {
+		const aluno = alunosMap.get(emprestimo.alunoId);
+		const livro = livrosMap.get(emprestimo.livroId);
+		if (alunoTerm) {
+			const nomeMatch = aluno?.nome?.toLocaleLowerCase().includes(alunoTerm);
+			const matriculaMatch = aluno?.matricula?.toLocaleLowerCase().includes(alunoTerm);
+			if (!nomeMatch && !matriculaMatch) return false;
+		}
+		if (livroTerm) {
+			const tituloMatch = livro?.titulo?.toLocaleLowerCase().includes(livroTerm);
+			const isbnMatch = livro?.isbn?.toLocaleLowerCase().includes(livroTerm);
+			const autorMatch = (livro?.autorIds || []).some(id =>
+				(autoresMap.get(id) || '').toLocaleLowerCase().includes(livroTerm)
+			);
+			if (!tituloMatch && !isbnMatch && !autorMatch) return false;
+		}
+		if (statusFilter && emprestimo.status !== statusFilter) return false;
+		if (dataPrevista && emprestimo.dataDevolucaoPrevista !== dataPrevista) return false;
+		if (apenasAtrasados && emprestimo.status !== 'Atrasado') return false;
+		return true;
+	});
+}
+
+function renderTabelaEmprestimos() {
+	const tbody = document.getElementById('tbody-emprestimos');
+	if (!tbody) return;
+	const emprestimos = refreshEmprestimoAutomaticStatuses().filter(isRegistroAtivo);
+	const alunosMap = new Map(loadAlunos().map(a => [a.id, a]));
+	const livrosMap = new Map(loadLivros().map(l => [l.id, l]));
+	const autoresMap = new Map(loadAutores().map(a => [a.id, a.nome]));
+	const filtrados = aplicarFiltrosEmprestimos(emprestimos, alunosMap, livrosMap, autoresMap)
+		.sort((a, b) => new Date(b.dataEmprestimo) - new Date(a.dataEmprestimo));
+
+	if (!filtrados.length) {
+		tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum empréstimo encontrado.</td></tr>';
+		return;
+	}
+
+	tbody.innerHTML = '';
+	for (const emprestimo of filtrados) {
+		const aluno = alunosMap.get(emprestimo.alunoId);
+		const livro = livrosMap.get(emprestimo.livroId);
+		const tr = document.createElement('tr');
+		tr.innerHTML = `
+			<td>${escapeHtml(formatAlunoLabel(aluno))}</td>
+			<td>${escapeHtml(formatLivroLabel(livro))}</td>
+			<td>${escapeHtml(formatDateTimeDisplay(emprestimo.dataEmprestimo))}</td>
+			<td>${escapeHtml(formatDateToDisplay(emprestimo.dataDevolucaoPrevista))}</td>
+			<td>${escapeHtml(emprestimo.status)}</td>
+			<td>
+				<div class="actions">
+					<button class="btn" data-action="editar-emprestimo" data-id="${emprestimo.id}">Editar</button>
+					<button class="btn danger" data-action="excluir-emprestimo" data-id="${emprestimo.id}">Excluir</button>
+				</div>
+			</td>
+		`;
+		tbody.appendChild(tr);
+	}
+}
+
+function setupEmprestimoConsulta() {
+	const form = document.getElementById('form-emprestimo-filtro');
+	const btnLimpar = document.getElementById('btnEmprestimoLimparFiltros');
+	const tbody = document.getElementById('tbody-emprestimos');
+	if (!form) return;
+
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		renderTabelaEmprestimos();
+	});
+	btnLimpar?.addEventListener('click', () => {
+		document.getElementById('filtroEmprestimoAluno').value = '';
+		document.getElementById('filtroEmprestimoLivro').value = '';
+		document.getElementById('filtroEmprestimoStatus').value = '';
+		document.getElementById('filtroEmprestimoDataPrevista').value = '';
+		document.getElementById('filtroEmprestimoAtrasado').checked = false;
+		renderTabelaEmprestimos();
+	});
+	tbody?.addEventListener('click', (e) => {
+		const btn = e.target.closest('button[data-action]');
+		if (!btn) return;
+		const id = btn.getAttribute('data-id');
+		const action = btn.getAttribute('data-action');
+		if (action === 'editar-emprestimo') abrirModalEmprestimoEdicao(id);
+		if (action === 'excluir-emprestimo') excluirEmprestimo(id);
+	});
+}
+
+function abrirModalEmprestimoEdicao(id) {
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	const emprestimo = emprestimos.find(e => e.id === id);
+	if (!emprestimo || emprestimo.ativo === false) return;
+	document.getElementById('edit-emprestimo-id').value = emprestimo.id;
+	document.getElementById('edit-emprestimo-aluno').value = formatAlunoLabel(findAlunoById(emprestimo.alunoId));
+	document.getElementById('edit-emprestimo-livro').value = formatLivroLabel(findLivroById(emprestimo.livroId));
+	document.getElementById('edit-emprestimo-data').value = formatDateTimeDisplay(emprestimo.dataEmprestimo);
+	document.getElementById('edit-emprestimo-prevista').value = emprestimo.dataDevolucaoPrevista || getTodayDateInputValue();
+	document.getElementById('edit-emprestimo-status').value = emprestimo.status;
+	showMessage(document.getElementById('emprestimo-edicao-messages'), '', 'success');
+	toggleEmprestimoModal(true);
+}
+
+function setupEmprestimoModalEdicao() {
+	const overlay = document.getElementById('modal-emprestimo-overlay');
+	const form = document.getElementById('form-emprestimo-edicao');
+	const btnCancelar = document.getElementById('btnCancelarEmprestimoEdicao');
+	if (!form) return;
+
+	overlay?.addEventListener('click', (e) => {
+		if (e.target === overlay) toggleEmprestimoModal(false);
+	});
+	btnCancelar?.addEventListener('click', () => toggleEmprestimoModal(false));
+
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		const id = document.getElementById('edit-emprestimo-id').value;
+		const dataPrevista = document.getElementById('edit-emprestimo-prevista').value;
+		const status = document.getElementById('edit-emprestimo-status').value;
+		const messages = document.getElementById('emprestimo-edicao-messages');
+		if (!dataPrevista) {
+			showMessage(messages, 'Informe a nova data de devolução prevista.', 'error');
+			return;
+		}
+		if (!EMPRESTIMO_STATUS.includes(status)) {
+			showMessage(messages, 'Selecione um status válido.', 'error');
+			return;
+		}
+		const emprestimos = refreshEmprestimoAutomaticStatuses();
+		const idx = emprestimos.findIndex(e => e.id === id);
+		if (idx === -1) {
+			showMessage(messages, 'Empréstimo não encontrado.', 'error');
+			return;
+		}
+		const emprestimo = emprestimos[idx];
+		const dataEmprestimo = emprestimo.dataEmprestimo?.slice(0, 10);
+		if (dataEmprestimo && dataPrevista < dataEmprestimo) {
+			showMessage(messages, 'A data prevista não pode ser anterior à data do empréstimo.', 'error');
+			return;
+		}
+		// Validar que status 'Atrasado' só pode ser usado se a data prevista for ultrapassada
+		const hoje = getTodayDateInputValue();
+		if (status === 'Atrasado' && dataPrevista >= hoje) {
+			showMessage(messages, 'O status "Atrasado" só pode ser usado quando a data de devolução prevista for ultrapassada.', 'error');
+			return;
+		}
+		const previous = cloneRecord(emprestimo);
+		emprestimo.dataDevolucaoPrevista = dataPrevista;
+		emprestimo.status = status;
+		if (status === 'Devolvido') {
+			emprestimo.dataDevolucaoReal = nowIsoString();
+		} else if (status !== 'Devolvido') {
+			emprestimo.dataDevolucaoReal = '';
+		}
+		recordHistory('emprestimo', 'edit', emprestimo, previous);
+		saveEmprestimos(emprestimos);
+		showMessage(messages, 'Empréstimo atualizado com sucesso!', 'success');
+		setTimeout(() => {
+			toggleEmprestimoModal(false);
+			renderTabelaEmprestimos();
+		}, 300);
+	});
+}
+
+function toggleEmprestimoModal(show) {
+	const overlay = document.getElementById('modal-emprestimo-overlay');
+	if (!overlay) return;
+	if (show) overlay.classList.remove('hidden'); else overlay.classList.add('hidden');
+}
+
+function excluirEmprestimo(id) {
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	const idx = emprestimos.findIndex(e => e.id === id);
+	if (idx === -1) return;
+	const emprestimo = emprestimos[idx];
+	if (emprestimo.status === 'Ativo' || emprestimo.status === 'Atrasado') {
+		alert('Não é possível excluir empréstimos com status Ativo ou Atrasado. Atualize o status para Devolvido ou Perdido.');
+		return;
+	}
+	const ok = confirm('Confirmar exclusão lógica deste empréstimo?');
+	if (!ok) return;
+	const snapshot = cloneRecord(emprestimo);
+	emprestimo.ativo = false;
+	emprestimo.excluidoEm = nowIsoString();
+	emprestimo.excluidoPor = 'Administrador';
+	saveEmprestimos(emprestimos);
+	recordHistory('emprestimo', 'delete', snapshot);
+	renderTabelaEmprestimos();
+	updateHomeStats();
+}
+
+// ==== RESERVAS ====
+function validarAlunoParaReserva(alunoId) {
+	if (!alunoId) return 'Selecione um aluno.';
+	const aluno = findAlunoById(alunoId);
+	if (!aluno) return 'Aluno não encontrado.';
+	if (aluno.status !== 'Ativo') return 'Somente alunos ativos podem realizar reservas.';
+	if (aluno.status === 'Suspenso') return 'Alunos suspensos não podem reservar livros.';
+	if (countReservasAtivasAluno(alunoId) >= MAX_RESERVAS_ATIVAS) {
+		return `Limite de ${MAX_RESERVAS_ATIVAS} reservas ativas atingido para este aluno.`;
+	}
+	return '';
+}
+
+function validarLivroParaReserva(livroId, alunoId) {
+	if (!livroId) return 'Selecione um livro.';
+	const livro = findLivroById(livroId);
+	if (!livro) return 'Livro não encontrado.';
+	if (!livroTemEspacoParaReserva(livroId)) return 'Não há exemplares disponíveis para reserva.';
+	if (existeReservaAtivaDuplicada(alunoId, livroId)) return 'Já existe uma reserva ativa deste aluno para o livro selecionado.';
+	return '';
+}
+
+function setupReservaCadastro() {
+	const form = document.getElementById('form-reserva-cadastro');
+	if (!form) return;
+	const alunoSelect = document.getElementById('reservaAluno');
+	const livroSelect = document.getElementById('reservaLivro');
+	const dataReservaInput = document.getElementById('reservaData');
+	const dataExpiracaoInput = document.getElementById('reservaDataExpiracao');
+	const statusSelect = document.getElementById('reservaStatus');
+	const messages = document.getElementById('reserva-cadastro-messages');
+
+	refreshReservaCadastroSelects();
+	resetReservaCadastroDefaults(true);
+	showMessage(messages, '', 'success');
+
+	alunoSelect?.addEventListener('change', () => {
+		const error = validarAlunoParaReserva(alunoSelect.value);
+		if (error) showMessage(messages, error, 'error'); else showMessage(messages, '', 'success');
+	});
+	livroSelect?.addEventListener('change', () => {
+		const alunoId = alunoSelect.value;
+		if (!alunoId) return;
+		const error = validarLivroParaReserva(livroSelect.value, alunoId);
+		if (error) showMessage(messages, error, 'error'); else showMessage(messages, '', 'success');
+	});
+
+	form.addEventListener('reset', () => {
+		setTimeout(() => {
+			refreshReservaCadastroSelects();
+			resetReservaCadastroDefaults(true);
+			showMessage(messages, '', 'success');
+		}, 0);
+	});
+
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		const alunoId = alunoSelect.value;
+		const livroId = livroSelect.value;
+		const dataExpiracao = dataExpiracaoInput.value;
+		const status = statusSelect.value || 'Ativa';
+
+		if (!dataExpiracao) {
+			showMessage(messages, 'Informe a data de expiração da reserva.', 'error');
+			dataExpiracaoInput.focus();
+			return;
+		}
+		const alunoError = validarAlunoParaReserva(alunoId);
+		if (alunoError) {
+			showMessage(messages, alunoError, 'error');
+			alunoSelect.focus();
+			return;
+		}
+		const livroError = validarLivroParaReserva(livroId, alunoId);
+		if (livroError) {
+			showMessage(messages, livroError, 'error');
+			livroSelect.focus();
+			return;
+		}
+		if (!RESERVA_STATUS.includes(status)) {
+			showMessage(messages, 'Selecione um status de reserva válido.', 'error');
+			statusSelect.focus();
+			return;
+		}
+		const hoje = getTodayDateInputValue();
+		// Validar que status 'Expirada' só pode ser usado se a data de expiração for ultrapassada
+		if (status === 'Expirada' && dataExpiracao >= hoje) {
+			showMessage(messages, 'O status "Expirada" só pode ser usado quando a data de expiração for ultrapassada.', 'error');
+			statusSelect.focus();
+			return;
+		}
+		// Para outros status, a data de expiração não pode ser anterior à data atual
+		if (status !== 'Expirada' && dataExpiracao < hoje) {
+			showMessage(messages, 'A data de expiração não pode ser anterior à data atual.', 'error');
+			dataExpiracaoInput.focus();
+			return;
+		}
+		const reservas = refreshReservaAutomaticStatuses();
+		const novaReserva = {
+			id: generateId(),
+			alunoId,
+			livroId,
+			dataReserva: dataReservaInput.dataset.iso || nowIsoString(),
+			dataExpiracao,
+			status,
+			ativo: true,
+			criadoEm: nowIsoString()
+		};
+		reservas.push(novaReserva);
+		saveReservas(reservas);
+		showMessage(messages, 'Reserva registrada com sucesso!', 'success');
+		form.reset();
+		refreshReservaCadastroSelects();
+		resetReservaCadastroDefaults(true);
+		showMessage(messages, '', 'success');
+		renderTabelaReservas();
+		updateHomeStats();
+		setTimeout(() => {
+			window.location.hash = '#/reserva/consulta';
+		}, 300);
+	});
+}
+
+function aplicarFiltrosReservas(reservas, alunosMap, livrosMap) {
+	const alunoTerm = document.getElementById('filtroReservaAluno')?.value.trim().toLocaleLowerCase() || '';
+	const livroTerm = document.getElementById('filtroReservaLivro')?.value.trim().toLocaleLowerCase() || '';
+	const statusFilter = document.getElementById('filtroReservaStatus')?.value || '';
+
+	return reservas.filter((reserva) => {
+		const aluno = alunosMap.get(reserva.alunoId);
+		const livro = livrosMap.get(reserva.livroId);
+		if (alunoTerm) {
+			const nomeMatch = aluno?.nome?.toLocaleLowerCase().includes(alunoTerm);
+			const matriculaMatch = aluno?.matricula?.toLocaleLowerCase().includes(alunoTerm);
+			if (!nomeMatch && !matriculaMatch) return false;
+		}
+		if (livroTerm) {
+			const tituloMatch = livro?.titulo?.toLocaleLowerCase().includes(livroTerm);
+			const isbnMatch = livro?.isbn?.toLocaleLowerCase().includes(livroTerm);
+			if (!tituloMatch && !isbnMatch) return false;
+		}
+		if (statusFilter && reserva.status !== statusFilter) return false;
+		return true;
+	});
+}
+
+function renderTabelaReservas() {
+	const tbody = document.getElementById('tbody-reservas');
+	if (!tbody) return;
+	const reservas = refreshReservaAutomaticStatuses().filter(isRegistroAtivo);
+	const alunosMap = new Map(loadAlunos().map(a => [a.id, a]));
+	const livrosMap = new Map(loadLivros().map(l => [l.id, l]));
+	const filtrados = aplicarFiltrosReservas(reservas, alunosMap, livrosMap)
+		.sort((a, b) => new Date(b.dataReserva) - new Date(a.dataReserva));
+
+	if (!filtrados.length) {
+		tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhuma reserva encontrada.</td></tr>';
+		return;
+	}
+
+	tbody.innerHTML = '';
+	for (const reserva of filtrados) {
+		const aluno = alunosMap.get(reserva.alunoId);
+		const livro = livrosMap.get(reserva.livroId);
+		const tr = document.createElement('tr');
+		tr.innerHTML = `
+			<td>${escapeHtml(formatAlunoLabel(aluno))}</td>
+			<td>${escapeHtml(formatLivroLabel(livro))}</td>
+			<td>${escapeHtml(formatDateTimeDisplay(reserva.dataReserva))}</td>
+			<td>${escapeHtml(formatDateToDisplay(reserva.dataExpiracao))}</td>
+			<td>${escapeHtml(reserva.status)}</td>
+			<td>
+				<div class="actions">
+					<button class="btn" data-action="editar-reserva" data-id="${reserva.id}">Editar</button>
+					<button class="btn danger" data-action="excluir-reserva" data-id="${reserva.id}">Excluir</button>
+				</div>
+			</td>
+		`;
+		tbody.appendChild(tr);
+	}
+}
+
+function setupReservaConsulta() {
+	const form = document.getElementById('form-reserva-filtro');
+	const btnLimpar = document.getElementById('btnReservaLimparFiltros');
+	const tbody = document.getElementById('tbody-reservas');
+	if (!form) return;
+
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		renderTabelaReservas();
+	});
+	btnLimpar?.addEventListener('click', () => {
+		document.getElementById('filtroReservaAluno').value = '';
+		document.getElementById('filtroReservaLivro').value = '';
+		document.getElementById('filtroReservaStatus').value = '';
+		renderTabelaReservas();
+	});
+	tbody?.addEventListener('click', (e) => {
+		const btn = e.target.closest('button[data-action]');
+		if (!btn) return;
+		const id = btn.getAttribute('data-id');
+		const action = btn.getAttribute('data-action');
+		if (action === 'editar-reserva') abrirModalReservaEdicao(id);
+		if (action === 'excluir-reserva') excluirReserva(id);
+	});
+}
+
+function abrirModalReservaEdicao(id) {
+	const reservas = refreshReservaAutomaticStatuses();
+	const reserva = reservas.find(r => r.id === id);
+	if (!reserva || reserva.ativo === false) return;
+	document.getElementById('edit-reserva-id').value = reserva.id;
+	document.getElementById('edit-reserva-aluno').value = formatAlunoLabel(findAlunoById(reserva.alunoId));
+	document.getElementById('edit-reserva-livro').value = formatLivroLabel(findLivroById(reserva.livroId));
+	document.getElementById('edit-reserva-data').value = formatDateTimeDisplay(reserva.dataReserva);
+	document.getElementById('edit-reserva-expiracao').value = reserva.dataExpiracao || getTodayDateInputValue();
+	document.getElementById('edit-reserva-status').value = reserva.status;
+	showMessage(document.getElementById('reserva-edicao-messages'), '', 'success');
+	toggleReservaModal(true);
+}
+
+function setupReservaModalEdicao() {
+	const overlay = document.getElementById('modal-reserva-overlay');
+	const form = document.getElementById('form-reserva-edicao');
+	const btnCancelar = document.getElementById('btnCancelarReservaEdicao');
+	if (!form) return;
+
+	overlay?.addEventListener('click', (e) => {
+		if (e.target === overlay) toggleReservaModal(false);
+	});
+	btnCancelar?.addEventListener('click', () => toggleReservaModal(false));
+
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		const id = document.getElementById('edit-reserva-id').value;
+		const dataExpiracao = document.getElementById('edit-reserva-expiracao').value;
+		const status = document.getElementById('edit-reserva-status').value;
+		const messages = document.getElementById('reserva-edicao-messages');
+		if (!dataExpiracao) {
+			showMessage(messages, 'Informe a data de expiração.', 'error');
+			return;
+		}
+		if (!RESERVA_STATUS.includes(status)) {
+			showMessage(messages, 'Selecione um status válido.', 'error');
+			return;
+		}
+		const reservas = refreshReservaAutomaticStatuses();
+		const idx = reservas.findIndex(r => r.id === id);
+		if (idx === -1) {
+			showMessage(messages, 'Reserva não encontrada.', 'error');
+			return;
+		}
+		const reserva = reservas[idx];
+		const previous = cloneRecord(reserva);
+		if (dataExpiracao < reserva.dataReserva?.slice(0, 10)) {
+			showMessage(messages, 'A expiração não pode ser anterior à data da reserva.', 'error');
+			return;
+		}
+		// Validar que status 'Expirada' só pode ser usado se a data de expiração for ultrapassada
+		const hoje = getTodayDateInputValue();
+		if (status === 'Expirada' && dataExpiracao >= hoje) {
+			showMessage(messages, 'O status "Expirada" só pode ser usado quando a data de expiração for ultrapassada.', 'error');
+			return;
+		}
+		reserva.dataExpiracao = dataExpiracao;
+		reserva.status = status;
+		if (status === 'Concluída' || status === 'Cancelada') {
+			reserva.dataEncerramento = nowIsoString();
+		} else if (status === 'Expirada') {
+			reserva.dataExpiracao = dataExpiracao;
+		} else {
+			reserva.dataEncerramento = '';
+		}
+		recordHistory('reserva', 'edit', reserva, previous);
+		saveReservas(reservas);
+		showMessage(messages, 'Reserva atualizada com sucesso!', 'success');
+		setTimeout(() => {
+			toggleReservaModal(false);
+			renderTabelaReservas();
+		}, 300);
+	});
+}
+
+function toggleReservaModal(show) {
+	const overlay = document.getElementById('modal-reserva-overlay');
+	if (!overlay) return;
+	if (show) overlay.classList.remove('hidden'); else overlay.classList.add('hidden');
+}
+
+function excluirReserva(id) {
+	const reservas = refreshReservaAutomaticStatuses();
+	const idx = reservas.findIndex(r => r.id === id);
+	if (idx === -1) return;
+	const reserva = reservas[idx];
+	if (reserva.status === 'Ativa') {
+		alert('Não é possível excluir uma reserva com status Ativa. Atualize o status para Cancelada ou Concluída.');
+		return;
+	}
+	const ok = confirm('Confirmar exclusão lógica desta reserva?');
+	if (!ok) return;
+	const snapshot = cloneRecord(reserva);
+	reserva.ativo = false;
+	reserva.excluidaEm = nowIsoString();
+	reserva.excluidaPor = 'Administrador';
+	saveReservas(reservas);
+	recordHistory('reserva', 'delete', snapshot);
+	renderTabelaReservas();
+	updateHomeStats();
+}
+
+function setupRelatorioGeneros() {
+	const form = document.getElementById('form-relatorio-generos');
+	const generosSelect = document.getElementById('relatorioGeneros');
+	const btnHistorico = document.getElementById('btnRelatorioHistorico');
+	const historicoBox = document.getElementById('relatorio-historico');
+	if (!form || !generosSelect) return;
+
+	populateGenreSelect(generosSelect);
+	initSelectedChips('relatorioGeneros', 'relatorioGenerosChips');
+
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		const dataInicio = (form.relatorioDataInicio.value || '').trim();
+		const dataFim = (form.relatorioDataFim.value || '').trim();
+		const generos = getSelectedValues(generosSelect);
+		const messages = document.getElementById('relatorio-messages');
+		if (!dataInicio || !dataFim) {
+			showMessage(messages, 'Informe a data inicial e final para emitir o relatório.', 'error');
+			return;
+		}
+		if (dataInicio > dataFim) {
+			showMessage(messages, 'Data inicial não pode ser maior que a data final.', 'error');
+			return;
+		}
+		const filtros = {
+			dataInicio,
+			dataFim,
+			generos,
+			periodo: `${formatDateToDisplay(dataInicio)} até ${formatDateToDisplay(dataFim)}`
+		};
+		const resultado = gerarRelatorioGeneros(filtros);
+		recordRelatorioGenerosHistory(filtros, resultado.total);
+		renderRelatorioGenerosHistory();
+		if (!resultado.total) {
+			renderRelatorioVazio();
+			showMessage(messages, 'Nenhum empréstimo encontrado para os filtros informados.', 'error');
+			return;
+		}
+		showMessage(messages, '', 'success');
+		renderRelatorioGeneros(resultado, filtros);
+	});
+
+	form.addEventListener('reset', () => {
+		setTimeout(() => {
+			populateGenreSelect(generosSelect);
+			initSelectedChips('relatorioGeneros', 'relatorioGenerosChips');
+			renderRelatorioVazio();
+			showMessage(document.getElementById('relatorio-messages'), '', 'success');
+		}, 0);
+	});
+
+	btnHistorico?.addEventListener('click', () => {
+		renderRelatorioGenerosHistory();
+		historicoBox?.classList.remove('hidden');
+		historicoBox?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	});
+
+	renderRelatorioGenerosHistory();
+}
+
+function gerarRelatorioGeneros(filtros) {
+	const livrosMap = new Map(loadLivros().map(l => [l.id, l]));
+	const alunosMap = new Map(loadAlunos().map(a => [a.id, a]));
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	const inicio = filtros.dataInicio;
+	const fim = filtros.dataFim;
+	const generosFiltro = filtros.generos?.length ? new Set(filtros.generos) : null;
+	const grupos = new Map();
+	let total = 0;
+
+	for (const emprestimo of emprestimos) {
+		if (!emprestimo.dataEmprestimo) continue;
+		const dataEmpDate = emprestimo.dataEmprestimo.slice(0, 10);
+		if (!dataEmpDate || dataEmpDate < inicio || dataEmpDate > fim) continue;
+		const livro = livrosMap.get(emprestimo.livroId);
+		if (!livro || !(livro.generos || []).length) continue;
+		const aluno = alunosMap.get(emprestimo.alunoId);
+		for (const genero of livro.generos) {
+			if (generosFiltro && !generosFiltro.has(genero)) continue;
+			if (!grupos.has(genero)) grupos.set(genero, { total: 0, registros: [] });
+			const grupo = grupos.get(genero);
+			grupo.total += 1;
+			total += 1;
+			grupo.registros.push({
+				aluno: formatAlunoLabel(aluno),
+				data: emprestimo.dataEmprestimo,
+				genero
+			});
+		}
+	}
+
+	for (const grupo of grupos.values()) {
+		grupo.registros.sort((a, b) => new Date(a.data) - new Date(b.data));
+	}
+
+	return { grupos, total };
+}
+
+function renderRelatorioVazio() {
+	const card = document.getElementById('relatorio-result');
+	const detalhes = document.getElementById('relatorio-detalhes');
+	card?.classList.add('hidden');
+	if (detalhes) detalhes.innerHTML = '';
+	if (relatorioPieChart) {
+		relatorioPieChart.destroy();
+		relatorioPieChart = null;
+	}
+	if (relatorioBarChart) {
+		relatorioBarChart.destroy();
+		relatorioBarChart = null;
+	}
+	document.getElementById('relatorio-pie-title').textContent = 'Gêneros Mais Emprestados (Percentual)';
+	document.getElementById('relatorio-bar-title').textContent = 'Gêneros Mais Emprestados (Números Absolutos)';
+}
+
+function renderRelatorioGeneros(resultado, filtros) {
+	const card = document.getElementById('relatorio-result');
+	const detalhes = document.getElementById('relatorio-detalhes');
+	if (!card || !detalhes) return;
+	card.classList.remove('hidden');
+
+	const labels = [];
+	const data = [];
+	const genreIds = new Map();
+	let colorIndex = 0;
+
+	detalhes.innerHTML = '';
+	const fragment = document.createDocumentFragment();
+
+	const sortedGrupos = [...resultado.grupos.entries()].sort((a, b) => a[0].localeCompare(b[0], 'pt-BR'));
+
+	for (const [genero, info] of sortedGrupos) {
+		labels.push(genero);
+		data.push(info.total);
+		const color = RELATORIO_GENRE_COLORS[colorIndex % RELATORIO_GENRE_COLORS.length];
+		colorIndex += 1;
+		const groupDiv = document.createElement('div');
+		groupDiv.className = 'relatorio-genre-group';
+		groupDiv.dataset.relatorioGenero = genero;
+		groupDiv.innerHTML = `<h4>${genero}</h4>`;
+		const table = document.createElement('table');
+		const tbody = document.createElement('tbody');
+		for (const registro of info.registros) {
+			const tr = document.createElement('tr');
+			tr.innerHTML = `
+				<td>${escapeHtml(registro.aluno)}</td>
+				<td>${escapeHtml(formatDateTimeDisplay(registro.data))}</td>
+				<td>${escapeHtml(registro.genero)}</td>
+			`;
+			tbody.appendChild(tr);
+		}
+		table.innerHTML = '<thead><tr><th>Aluno</th><th>Data / Horário</th><th>Gênero</th></tr></thead>';
+		table.appendChild(tbody);
+		groupDiv.appendChild(table);
+		const subtotal = document.createElement('div');
+		subtotal.className = 'relatorio-genre-total';
+		subtotal.textContent = `Subtotal ${genero}: ${info.total}`;
+		groupDiv.appendChild(subtotal);
+		fragment.appendChild(groupDiv);
+		genreIds.set(genero, color);
+	}
+
+	const totalGeral = document.createElement('div');
+	totalGeral.className = 'relatorio-total-geral';
+	totalGeral.textContent = `TOTAL de livros emprestados: ${resultado.total}`;
+	fragment.appendChild(totalGeral);
+	detalhes.appendChild(fragment);
+
+	document.getElementById('relatorio-pie-title').textContent = `Gêneros mais alugados no período ${filtros.periodo}`;
+	document.getElementById('relatorio-bar-title').textContent = `Quantidade de livros alugados no período ${filtros.periodo}`;
+
+	// Aguarda o DOM atualizar antes de renderizar os gráficos
+	setTimeout(() => {
+		renderRelatorioCharts(labels, data, genreIds, resultado.total);
+	}, 50);
+}
+
+function renderRelatorioCharts(labels, data, genreColors, total = 0) {
+	if (typeof Chart === 'undefined') {
+		console.error('Chart.js não está carregado');
+		return;
+	}
+
+	const pieCtx = document.getElementById('relatorioPieChart');
+	const barCtx = document.getElementById('relatorioBarChart');
+	
+	if (!pieCtx || !barCtx) {
+		console.error('Elementos canvas não encontrados', { pieCtx: !!pieCtx, barCtx: !!barCtx });
+		return;
+	}
+
+	if (!labels || !labels.length || !data || !data.length) {
+		console.error('Dados vazios para gráficos', { labels, data });
+		return;
+	}
+
+	const colors = labels.map(label => genreColors.get(label) || RELATORIO_GENRE_COLORS[0]);
+	const absoluteData = data.slice();
+	const totalCount = total || absoluteData.reduce((sum, value) => sum + value, 0);
+	const pieData = totalCount
+		? absoluteData.map(value => (value / totalCount) * 100)
+		: absoluteData.map(() => 0);
+
+	const legendConfig = {
+		position: 'top',
+		align: 'start',
+		onClick: () => {},
+		onHover: null,
+		padding: {
+			top: 0,
+			bottom: 24,
+			left: 0,
+			right: 0
+		},
+		labels: {
+			usePointStyle: true,
+			pointStyle: 'circle',
+			padding: 16,
+			boxWidth: 10,
+			color: '#0f172a',
+			font: { family: RELATORIO_CHART_FONT, size: 12 }
+		}
+	};
+
+	if (relatorioPieChart) {
+		relatorioPieChart.destroy();
+		relatorioPieChart = null;
+	}
+	if (relatorioBarChart) {
+		relatorioBarChart.destroy();
+		relatorioBarChart = null;
+	}
+
+	const onClick = (evt, elements) => {
+		if (!elements || !elements.length) return;
+		const index = elements[0].index;
+		const genero = labels[index];
+		const target = document.querySelector(`[data-relatorio-genero="${CSS?.escape ? CSS.escape(genero) : genero}"]`);
+		target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		target?.classList.add('highlight');
+		setTimeout(() => target?.classList.remove('highlight'), 1200);
+	};
+
+	try {
+		const pieLabelsPlugin = {
+			id: 'relatorioPieLabels',
+			afterDatasetsDraw(chart) {
+				const { ctx } = chart;
+				ctx.save();
+				try {
+					const meta = chart.getDatasetMeta(0);
+					if (!meta || !meta.data) return;
+					const chartArea = chart.chartArea;
+					const centerX = chartArea.left + (chartArea.right - chartArea.left) / 2;
+					const centerY = chartArea.top + (chartArea.bottom - chartArea.top) / 2;
+					
+					meta.data.forEach((element, index) => {
+						const percent = pieData[index];
+						if (!percent || !element) return;
+						
+						// Calcular o ângulo médio da fatia
+						const angle = (element.startAngle + element.endAngle) / 2;
+						
+						// Calcular a posição na borda externa da fatia
+						const outerRadius = element.outerRadius;
+						const labelRadius = outerRadius + 20;
+						
+						// Calcular posição do label baseado no centro do gráfico
+						const x = centerX + Math.cos(angle) * labelRadius;
+						const y = centerY + Math.sin(angle) * labelRadius;
+						
+						const text = `${labels[index]} ${percent.toFixed(1)}%`;
+						ctx.font = `600 12px ${RELATORIO_CHART_FONT}`;
+						ctx.fillStyle = '#0f172a';
+						ctx.textBaseline = 'middle';
+						
+						// Determinar alinhamento baseado na posição relativa ao centro
+						if (Math.abs(x - centerX) < 5) {
+							// Próximo do centro verticalmente
+							ctx.textAlign = 'center';
+						} else if (x < centerX) {
+							// Lado esquerdo
+							ctx.textAlign = 'right';
+						} else {
+							// Lado direito
+							ctx.textAlign = 'left';
+						}
+						
+						// Ajustar posição Y se estiver muito próximo das bordas
+						let finalY = y;
+						const padding = 8;
+						if (y < chartArea.top + padding) {
+							finalY = chartArea.top + padding;
+						} else if (y > chartArea.bottom - padding) {
+							finalY = chartArea.bottom - padding;
+						}
+						
+						ctx.fillText(text, x, finalY);
+					});
+				} catch (err) {
+					console.error('Erro ao desenhar labels do gráfico pizza:', err);
+				}
+				ctx.restore();
+			}
+		};
+
+		relatorioPieChart = new Chart(pieCtx, {
+			type: 'pie',
+			data: {
+				labels,
+				datasets: [{
+					data: pieData,
+					backgroundColor: colors,
+					borderWidth: 0
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				layout: {
+					padding: { top: 24, right: 24, bottom: 40, left: 24 }
+				},
+				plugins: {
+					legend: {
+						display: false
+					},
+					tooltip: {
+						callbacks: {
+							label(context) {
+								const genero = context.label || '';
+								const percent = pieData[context.dataIndex] ?? 0;
+								const absolute = absoluteData[context.dataIndex] ?? 0;
+								const percentDisplay = Number(percent).toFixed(1);
+								return `${genero}: ${percentDisplay}% (${absolute})`;
+							}
+						}
+					}
+				},
+				onClick
+			},
+			plugins: [pieLabelsPlugin]
+		});
+
+		const barLabelsPlugin = {
+			id: 'relatorioBarLabels',
+			afterDatasetsDraw(chart) {
+				const { ctx } = chart;
+				ctx.save();
+				try {
+					const meta = chart.getDatasetMeta(0);
+					if (!meta || !meta.data) return;
+					meta.data.forEach((element, index) => {
+						const value = absoluteData[index];
+						if (!value || !element) return;
+						const { x, y } = element.tooltipPosition();
+						ctx.font = `600 12px ${RELATORIO_CHART_FONT}`;
+						ctx.fillStyle = '#0f172a';
+						ctx.textAlign = 'center';
+						ctx.textBaseline = 'bottom';
+						ctx.fillText(value, x, y - 8);
+					});
+				} catch (err) {
+					console.error('Erro ao desenhar labels do gráfico de barras:', err);
+				}
+				ctx.restore();
+			}
+		};
+
+		// Configuração de legenda específica para o gráfico de barras
+		const barLegendConfig = {
+			...legendConfig,
+			labels: {
+				...legendConfig.labels,
+				generateLabels: function(chart) {
+					return labels.map((label, index) => ({
+						text: label,
+						fillStyle: colors[index],
+						strokeStyle: colors[index],
+						lineWidth: 0,
+						hidden: false,
+						index: index,
+						datasetIndex: 0
+					}));
+				}
+			}
+		};
+
+		relatorioBarChart = new Chart(barCtx, {
+			type: 'bar',
+			data: {
+				labels,
+				datasets: [{
+					label: 'Empréstimos',
+					data: absoluteData,
+					backgroundColor: colors,
+					borderRadius: 0,
+					borderSkipped: false,
+					maxBarThickness: 48
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				layout: {
+					padding: { top: 32, right: 12, bottom: 12, left: 12 }
+				},
+				scales: {
+					x: {
+						grid: { display: false },
+						ticks: { color: '#0f172a', font: { family: RELATORIO_CHART_FONT } }
+					},
+					y: {
+						beginAtZero: true,
+						ticks: { stepSize: 1, color: '#0f172a', font: { family: RELATORIO_CHART_FONT } },
+						title: { display: true, text: 'Quantidade absoluta', color: '#0f172a' },
+						grid: {
+							color: 'rgba(148, 163, 184, 0.5)',
+							borderDash: [4, 4],
+							drawBorder: false
+						}
+					}
+				},
+				plugins: {
+					legend: {
+						display: false
+					},
+					tooltip: {
+						callbacks: {
+							label(context) {
+								const genero = context.label || '';
+								const value = absoluteData[context.dataIndex] ?? 0;
+								const suffix = value === 1 ? 'empréstimo' : 'empréstimos';
+								return `${genero}: ${value} ${suffix}`;
+							}
+						}
+					}
+				},
+				onClick
+			},
+			plugins: [barLabelsPlugin]
+		});
+		
+		console.log('Gráficos criados com sucesso');
+	} catch (err) {
+		console.error('Erro ao criar gráficos:', err);
+	}
+}
+
+function recordRelatorioGenerosHistory(filtros, total) {
+	const entries = loadRelatorioGenerosHistory();
+	entries.push({
+		dataHora: nowIsoString(),
+		usuario: 'Bibliotecário',
+		filtros,
+		total
+	});
+	saveRelatorioGenerosHistory(entries.slice(-20));
+}
+
+function renderRelatorioGenerosHistory() {
+	const container = document.getElementById('relatorio-historico');
+	const list = document.getElementById('relatorio-historico-list');
+	if (!container || !list) return;
+	const entries = loadRelatorioGenerosHistory();
+	list.innerHTML = '';
+	if (!entries.length) {
+		const li = document.createElement('li');
+		li.className = 'empty';
+		li.textContent = 'Nenhuma emissão registrada.';
+		list.appendChild(li);
+		return;
+	}
+	for (const entry of [...entries].reverse()) {
+		const li = document.createElement('li');
+		const periodo = entry.filtros?.periodo || '';
+		const generos = entry.filtros?.generos?.length ? entry.filtros.generos.join(', ') : 'Todos';
+		li.innerHTML = `<strong>${formatDateTimeDisplay(entry.dataHora)}</strong> — ${entry.usuario || 'Bibliotecário'}<br>Período: ${periodo || 'não informado'}<br>Gêneros: ${generos}<br>Total: ${entry.total || 0}`;
+		list.appendChild(li);
+	}
+}
+
+// ==== RELATÓRIO DE FAIXA ETÁRIA X EMPRÉSTIMO ====
+
+function calcularIdade(dataNascimento, dataReferencia) {
+	if (!dataNascimento || !dataReferencia) return null;
+	const nasc = new Date(dataNascimento);
+	const ref = new Date(dataReferencia);
+	if (Number.isNaN(nasc.getTime()) || Number.isNaN(ref.getTime())) return null;
+	let idade = ref.getFullYear() - nasc.getFullYear();
+	const mesDiff = ref.getMonth() - nasc.getMonth();
+	if (mesDiff < 0 || (mesDiff === 0 && ref.getDate() < nasc.getDate())) {
+		idade--;
+	}
+	return idade;
+}
+
+function determinarFaixaEtaria(idade) {
+	if (idade === null || idade === undefined) return null;
+	if (idade >= 0 && idade <= 5) return '0-5';
+	if (idade >= 6 && idade <= 11) return '6-11';
+	if (idade >= 12 && idade <= 14) return '12-14';
+	if (idade >= 15 && idade <= 17) return '15-17';
+	if (idade >= 18) return '18+';
+	return null;
+}
+
+function formatFaixaEtariaLabel(faixa) {
+	const labels = {
+		'0-5': '0 - 5',
+		'6-11': '6 - 11',
+		'12-14': '12 - 14',
+		'15-17': '15 - 17',
+		'18+': '18+'
+	};
+	return labels[faixa] || faixa;
+}
+
+function gerarRelatorioFaixaEtaria(filtros) {
+	const alunosMap = new Map(loadAlunos().map(a => [a.id, a]));
+	const emprestimos = refreshEmprestimoAutomaticStatuses();
+	const inicio = filtros.dataInicio;
+	const fim = filtros.dataFim;
+	const faixaEtariaFiltro = filtros.faixaEtaria || '';
+	const grupos = new Map();
+	let total = 0;
+
+	const faixasEtarias = ['0-5', '6-11', '12-14', '15-17', '18+'];
+	for (const faixa of faixasEtarias) {
+		grupos.set(faixa, { total: 0, registros: [] });
+	}
+
+	for (const emprestimo of emprestimos) {
+		if (!emprestimo.dataEmprestimo) continue;
+		const dataEmpDate = emprestimo.dataEmprestimo.slice(0, 10);
+		if (!dataEmpDate || dataEmpDate < inicio || dataEmpDate > fim) continue;
+		const aluno = alunosMap.get(emprestimo.alunoId);
+		if (!aluno || !aluno.dataNascimento) continue;
+		
+		const idade = calcularIdade(aluno.dataNascimento, dataEmpDate);
+		const faixaEtaria = determinarFaixaEtaria(idade);
+		if (!faixaEtaria) continue;
+		
+		if (faixaEtariaFiltro && faixaEtaria !== faixaEtariaFiltro) continue;
+		
+		const grupo = grupos.get(faixaEtaria);
+		grupo.total += 1;
+		total += 1;
+		grupo.registros.push({
+			aluno: formatAlunoLabel(aluno),
+			data: emprestimo.dataEmprestimo,
+			faixaEtaria,
+			idade
+		});
+	}
+
+	// Ordenar registros por data crescente dentro de cada grupo
+	for (const grupo of grupos.values()) {
+		grupo.registros.sort((a, b) => new Date(a.data) - new Date(b.data));
+	}
+
+	return { grupos, total };
+}
+
+function renderRelatorioFaixaEtariaVazio() {
+	const card = document.getElementById('relatorio-faixa-etaria-result');
+	const detalhes = document.getElementById('relatorio-faixa-etaria-detalhes');
+	card?.classList.add('hidden');
+	if (detalhes) detalhes.innerHTML = '';
+	if (relatorioFaixaEtariaBarChart) {
+		relatorioFaixaEtariaBarChart.destroy();
+		relatorioFaixaEtariaBarChart = null;
+	}
+	document.getElementById('relatorio-faixa-etaria-bar-title').textContent = 'Faixa Etária X Empréstimo';
+}
+
+function renderRelatorioFaixaEtaria(resultado, filtros) {
+	const card = document.getElementById('relatorio-faixa-etaria-result');
+	const detalhes = document.getElementById('relatorio-faixa-etaria-detalhes');
+	if (!card || !detalhes) return;
+	card.classList.remove('hidden');
+
+	const labels = [];
+	const data = [];
+	const faixaEtariaIds = new Map();
+	let colorIndex = 0;
+
+	detalhes.innerHTML = '';
+	const fragment = document.createDocumentFragment();
+
+	// Ordenar faixas etárias na ordem correta
+	const faixasEtarias = ['0-5', '6-11', '12-14', '15-17', '18+'];
+	const sortedGrupos = faixasEtarias
+		.map(faixa => [faixa, resultado.grupos.get(faixa)])
+		.filter(([_, info]) => info && info.total > 0);
+
+	for (const [faixa, info] of sortedGrupos) {
+		labels.push(formatFaixaEtariaLabel(faixa));
+		data.push(info.total);
+		const color = RELATORIO_GENRE_COLORS[colorIndex % RELATORIO_GENRE_COLORS.length];
+		colorIndex += 1;
+		
+		const groupDiv = document.createElement('div');
+		groupDiv.className = 'relatorio-faixa-etaria-group';
+		groupDiv.dataset.relatorioFaixaEtaria = faixa;
+		groupDiv.innerHTML = `<h4>${formatFaixaEtariaLabel(faixa)}</h4>`;
+		
+		const table = document.createElement('table');
+		const tbody = document.createElement('tbody');
+		for (const registro of info.registros) {
+			const tr = document.createElement('tr');
+			tr.innerHTML = `
+				<td>${escapeHtml(registro.aluno)}</td>
+				<td>${escapeHtml(formatDateTimeDisplay(registro.data))}, ${escapeHtml(formatFaixaEtariaLabel(registro.faixaEtaria))}</td>
+			`;
+			tbody.appendChild(tr);
+		}
+		table.innerHTML = '<thead><tr><th>Cliente</th><th>Data, Horário, Faixa etária</th></tr></thead>';
+		table.appendChild(tbody);
+		groupDiv.appendChild(table);
+		
+		const subtotal = document.createElement('div');
+		subtotal.className = 'relatorio-faixa-etaria-total';
+		subtotal.textContent = `Subtotal ${formatFaixaEtariaLabel(faixa)}: ${info.total}`;
+		groupDiv.appendChild(subtotal);
+		fragment.appendChild(groupDiv);
+		faixaEtariaIds.set(faixa, color);
+	}
+
+	const totalGeral = document.createElement('div');
+	totalGeral.className = 'relatorio-total-geral';
+	totalGeral.textContent = `TOTAL Pessoas: ${resultado.total}`;
+	fragment.appendChild(totalGeral);
+	detalhes.appendChild(fragment);
+
+	document.getElementById('relatorio-faixa-etaria-bar-title').textContent = 
+		`Faixa Etária X Empréstimo - Período ${filtros.periodo}`;
+
+	// Aguarda o DOM atualizar antes de renderizar o gráfico
+	setTimeout(() => {
+		renderRelatorioFaixaEtariaChart(labels, data, faixaEtariaIds, resultado.total);
+	}, 50);
+}
+
+function renderRelatorioFaixaEtariaChart(labels, data, faixaEtariaColors, total = 0) {
+	if (typeof Chart === 'undefined') {
+		console.error('Chart.js não está carregado');
+		return;
+	}
+
+	const barCtx = document.getElementById('relatorioFaixaEtariaBarChart');
+	if (!barCtx) {
+		console.error('Elemento canvas não encontrado');
+		return;
+	}
+
+	if (!labels || !labels.length || !data || !data.length) {
+		console.error('Dados vazios para gráfico', { labels, data });
+		return;
+	}
+
+	const faixasEtarias = ['0-5', '6-11', '12-14', '15-17', '18+'];
+	const colors = labels.map((label, index) => {
+		// Encontrar a faixa etária correspondente ao label
+		const faixa = faixasEtarias.find(f => formatFaixaEtariaLabel(f) === label);
+		return faixaEtariaColors.get(faixa) || RELATORIO_GENRE_COLORS[index % RELATORIO_GENRE_COLORS.length];
+	});
+
+	if (relatorioFaixaEtariaBarChart) {
+		relatorioFaixaEtariaBarChart.destroy();
+		relatorioFaixaEtariaBarChart = null;
+	}
+
+	const onClick = (evt, elements) => {
+		if (!elements || !elements.length) return;
+		const index = elements[0].index;
+		const label = labels[index];
+		// Encontrar a faixa etária correspondente ao label
+		const faixa = faixasEtarias.find(f => formatFaixaEtariaLabel(f) === label);
+		if (!faixa) return;
+		const target = document.querySelector(`[data-relatorio-faixa-etaria="${CSS?.escape ? CSS.escape(faixa) : faixa}"]`);
+		target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		target?.classList.add('highlight');
+		setTimeout(() => target?.classList.remove('highlight'), 1200);
+	};
+
+	try {
+		const barLabelsPlugin = {
+			id: 'relatorioFaixaEtariaBarLabels',
+			afterDatasetsDraw(chart) {
+				const { ctx } = chart;
+				ctx.save();
+				try {
+					const meta = chart.getDatasetMeta(0);
+					if (!meta || !meta.data) return;
+					meta.data.forEach((element, index) => {
+						const value = data[index];
+						if (!value || !element) return;
+						const { x, y } = element.tooltipPosition();
+						ctx.font = `600 12px ${RELATORIO_CHART_FONT}`;
+						ctx.fillStyle = '#0f172a';
+						ctx.textAlign = 'center';
+						ctx.textBaseline = 'bottom';
+						ctx.fillText(value, x, y - 8);
+					});
+				} catch (err) {
+					console.error('Erro ao desenhar labels do gráfico de barras:', err);
+				}
+				ctx.restore();
+			}
+		};
+
+		relatorioFaixaEtariaBarChart = new Chart(barCtx, {
+			type: 'bar',
+			data: {
+				labels,
+				datasets: [{
+					label: 'Empréstimos',
+					data: data,
+					backgroundColor: colors,
+					borderRadius: 0,
+					borderSkipped: false,
+					maxBarThickness: 48
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				layout: {
+					padding: { top: 32, right: 12, bottom: 12, left: 12 }
+				},
+				scales: {
+					x: {
+						grid: { display: false },
+						ticks: { color: '#0f172a', font: { family: RELATORIO_CHART_FONT } }
+					},
+					y: {
+						beginAtZero: true,
+						ticks: { stepSize: 1, color: '#0f172a', font: { family: RELATORIO_CHART_FONT } },
+						title: { display: true, text: 'Quantidade de empréstimos', color: '#0f172a' },
+						grid: {
+							color: 'rgba(148, 163, 184, 0.5)',
+							borderDash: [4, 4],
+							drawBorder: false
+						}
+					}
+				},
+				plugins: {
+					legend: {
+						display: false
+					},
+					tooltip: {
+						callbacks: {
+							label(context) {
+								const faixa = context.label || '';
+								const value = data[context.dataIndex] ?? 0;
+								const suffix = value === 1 ? 'empréstimo' : 'empréstimos';
+								return `${faixa}: ${value} ${suffix}`;
+							}
+						}
+					}
+				},
+				onClick
+			},
+			plugins: [barLabelsPlugin]
+		});
+		
+		console.log('Gráfico de faixa etária criado com sucesso');
+	} catch (err) {
+		console.error('Erro ao criar gráfico de faixa etária:', err);
+	}
+}
+
+function recordRelatorioFaixaEtariaHistory(filtros, total) {
+	const entries = loadRelatorioFaixaEtariaHistory();
+	entries.push({
+		dataHora: nowIsoString(),
+		usuario: 'Bibliotecário',
+		filtros,
+		total
+	});
+	saveRelatorioFaixaEtariaHistory(entries.slice(-20));
+}
+
+function renderRelatorioFaixaEtariaHistory() {
+	const container = document.getElementById('relatorio-faixa-etaria-historico');
+	const list = document.getElementById('relatorio-faixa-etaria-historico-list');
+	if (!container || !list) return;
+	const entries = loadRelatorioFaixaEtariaHistory();
+	list.innerHTML = '';
+	if (!entries.length) {
+		const li = document.createElement('li');
+		li.className = 'empty';
+		li.textContent = 'Nenhuma emissão registrada.';
+		list.appendChild(li);
+		return;
+	}
+	for (const entry of [...entries].reverse()) {
+		const li = document.createElement('li');
+		const periodo = entry.filtros?.periodo || '';
+		const faixaEtaria = entry.filtros?.faixaEtaria ? formatFaixaEtariaLabel(entry.filtros.faixaEtaria) : 'Todas';
+		li.innerHTML = `<strong>${formatDateTimeDisplay(entry.dataHora)}</strong> — ${entry.usuario || 'Bibliotecário'}<br>Período: ${periodo || 'não informado'}<br>Faixa etária: ${faixaEtaria}<br>Total: ${entry.total || 0}`;
+		list.appendChild(li);
+	}
+}
+
+function setupRelatorioFaixaEtaria() {
+	const form = document.getElementById('form-relatorio-faixa-etaria');
+	const btnHistorico = document.getElementById('btnRelatorioFaixaEtariaHistorico');
+	const historicoBox = document.getElementById('relatorio-faixa-etaria-historico');
+	if (!form) return;
+
+	form.addEventListener('submit', (e) => {
+		e.preventDefault();
+		const dataInicio = (form.relatorioFaixaEtariaDataInicio.value || '').trim();
+		const dataFim = (form.relatorioFaixaEtariaDataFim.value || '').trim();
+		const faixaEtaria = (form.relatorioFaixaEtaria.value || '').trim();
+		const messages = document.getElementById('relatorio-faixa-etaria-messages');
+		if (!dataInicio || !dataFim) {
+			showMessage(messages, 'Informe a data inicial e final para emitir o relatório.', 'error');
+			return;
+		}
+		if (dataInicio > dataFim) {
+			showMessage(messages, 'Data inicial não pode ser maior que a data final.', 'error');
+			return;
+		}
+		const filtros = {
+			dataInicio,
+			dataFim,
+			faixaEtaria,
+			periodo: `${formatDateToDisplay(dataInicio)} até ${formatDateToDisplay(dataFim)}`
+		};
+		const resultado = gerarRelatorioFaixaEtaria(filtros);
+		recordRelatorioFaixaEtariaHistory(filtros, resultado.total);
+		renderRelatorioFaixaEtariaHistory();
+		if (!resultado.total) {
+			renderRelatorioFaixaEtariaVazio();
+			showMessage(messages, 'Nenhum empréstimo encontrado para os filtros informados.', 'error');
+			return;
+		}
+		showMessage(messages, '', 'success');
+		renderRelatorioFaixaEtaria(resultado, filtros);
+	});
+
+	form.addEventListener('reset', () => {
+		setTimeout(() => {
+			renderRelatorioFaixaEtariaVazio();
+			showMessage(document.getElementById('relatorio-faixa-etaria-messages'), '', 'success');
+		}, 0);
+	});
+
+	btnHistorico?.addEventListener('click', () => {
+		const isHidden = historicoBox.classList.contains('hidden');
+		if (isHidden) {
+			renderRelatorioFaixaEtariaHistory();
+			historicoBox.classList.remove('hidden');
+			historicoBox?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		} else {
+			historicoBox.classList.add('hidden');
+		}
+	});
+
+	renderRelatorioFaixaEtariaHistory();
 }
