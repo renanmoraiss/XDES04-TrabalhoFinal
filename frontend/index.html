@@ -8,38 +8,59 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 <body>
-	<header class="app-header">
-		<div class="header-row">
-			<div class="header-left">
-				<span class="role-badge">Colégio Atlas</span>
-				<button type="button" class="burger" id="burger-button" aria-expanded="false" aria-controls="burger-menu" aria-label="Abrir menu de navegação">
-					<i class="fa-solid fa-bars"></i>
-				</button>
-				<nav id="burger-menu" class="burger-menu" aria-hidden="true">
-					<a href="#/home" id="tab-home" class="tab active">Principal</a>
-					<a href="#/aluno/cadastro" id="tab-cadastro" class="tab">Cadastro de Aluno</a>
-					<a href="#/aluno/consulta" id="tab-consulta" class="tab">Consulta de Aluno</a>
-					<a href="#/autor/cadastro" id="tab-autor-cadastro" class="tab">Cadastro de Autor</a>
-					<a href="#/autor/consulta" id="tab-autor-consulta" class="tab">Consulta de Autor</a>
-					<a href="#/editora/cadastro" id="tab-editora-cadastro" class="tab">Cadastro de Editora</a>
-					<a href="#/editora/consulta" id="tab-editora-consulta" class="tab">Consulta de Editora</a>
-					<a href="#/livro/cadastro" id="tab-livro-cadastro" class="tab">Cadastro de Livro</a>
-					<a href="#/livro/consulta" id="tab-livro-consulta" class="tab">Consulta de Livro</a>
-				</nav>
+	<div class="app-shell">
+		<aside class="sidebar">
+			<div class="sidebar-brand">
+				<i class="fa-solid fa-building-columns"></i>
+				<span>Biblioteca Escolar</span>
 			</div>
-			<div class="header-right">
-				<a href="login.html" class="btn link">Sair</a>
+			<div class="sidebar-user">
+				<div class="avatar-circle">📗</div>
+				<div>
+					<p>Bem-vindo(a)</p>
+					<strong>Bibliotecário(a)</strong>
+				</div>
 			</div>
-		</div>
-		<div class="sub-header">
-			<div class="sub-links">
-				<a href="#/home" class="sub-link" id="sub-dashboard">Principal</a>
-				<a href="#/instituicao" class="sub-link" id="tab-instituicao">Sobre</a>
-			</div>
-		</div>
-	</header>
+			<nav class="sidebar-nav">
+				<p class="nav-label">Painel</p>
+				<a href="#/home" id="tab-home" class="tab active"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+				<p class="nav-label">Alunos</p>
+				<a href="#/aluno/cadastro" id="tab-cadastro" class="tab"><i class="fa-solid fa-user-plus"></i><span>Cadastro</span></a>
+				<a href="#/aluno/consulta" id="tab-consulta" class="tab"><i class="fa-solid fa-list"></i><span>Consulta</span></a>
+				<p class="nav-label">Autores</p>
+				<a href="#/autor/cadastro" id="tab-autor-cadastro" class="tab"><i class="fa-solid fa-pen-nib"></i><span>Cadastro</span></a>
+				<a href="#/autor/consulta" id="tab-autor-consulta" class="tab"><i class="fa-solid fa-folder-open"></i><span>Consulta</span></a>
+				<p class="nav-label">Editoras</p>
+				<a href="#/editora/cadastro" id="tab-editora-cadastro" class="tab"><i class="fa-solid fa-building"></i><span>Cadastro</span></a>
+				<a href="#/editora/consulta" id="tab-editora-consulta" class="tab"><i class="fa-solid fa-clipboard-list"></i><span>Consulta</span></a>
+				<p class="nav-label">Livros</p>
+				<a href="#/livro/cadastro" id="tab-livro-cadastro" class="tab"><i class="fa-solid fa-book-medical"></i><span>Cadastro</span></a>
+				<a href="#/livro/consulta" id="tab-livro-consulta" class="tab"><i class="fa-solid fa-book-open"></i><span>Consulta</span></a>
+				<p class="nav-label">Empréstimos</p>
+				<a href="#/emprestimo/cadastro" id="tab-emprestimo-cadastro" class="tab"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Efetuar</span></a>
+				<a href="#/emprestimo/consulta" id="tab-emprestimo-consulta" class="tab"><i class="fa-solid fa-magnifying-glass"></i><span>Consultar</span></a>
+				<p class="nav-label">Reservas</p>
+				<a href="#/reserva/cadastro" id="tab-reserva-cadastro" class="tab"><i class="fa-solid fa-bookmark"></i><span>Efetuar</span></a>
+				<a href="#/reserva/consulta" id="tab-reserva-consulta" class="tab"><i class="fa-solid fa-eye"></i><span>Consultar</span></a>
+				<p class="nav-label">Relatórios</p>
+				<a href="#/relatorios" id="tab-relatorios" class="tab"><i class="fa-solid fa-chart-pie"></i><span>Gêneros Emprestados</span></a>
+				<a href="#/relatorios-faixa-etaria" id="tab-relatorios-faixa-etaria" class="tab"><i class="fa-solid fa-chart-bar"></i><span>Faixa Etária X Empréstimo</span></a>
+				<p class="nav-label">Institucional</p>
+				<a href="#/instituicao" id="tab-instituicao" class="tab"><i class="fa-solid fa-circle-info"></i><span>Sobre</span></a>
+			</nav>
+		</aside>
+		<div class="main-column">
+			<header class="topbar">
+				<div>
+					<p class="topbar-subtitle">Sistema de Biblioteca Escolar • V3.0</p>
+					<h1 class="topbar-title">Painel de Gestão</h1>
+				</div>
+				<div class="topbar-actions">
+					<a href="login.html" class="btn ghost">Sair</a>
+				</div>
+			</header>
 
-	<main class="container">
+			<main class="container">
 		<section id="view-home" class="view">
 			<div class="hero">
 				<h2 class="hero-title">Sistema de Biblioteca Escolar</h2>
@@ -91,6 +112,28 @@
 						<a class="btn" href="#/livro/consulta">Consultar Livro</a>
 					</div>
 				</div>
+				<div class="entity-card">
+					<h3 class="entity-title">Empréstimos</h3>
+					<div class="stat-card">
+						<div class="stat-label">Empréstimos ativos</div>
+						<div class="stat-value" id="stat-total-emprestimos">0</div>
+					</div>
+					<div class="entity-actions">
+						<a class="btn primary" href="#/emprestimo/cadastro">Efetuar Empréstimo</a>
+						<a class="btn" href="#/emprestimo/consulta">Consultar Empréstimo</a>
+					</div>
+				</div>
+				<div class="entity-card">
+					<h3 class="entity-title">Reservas</h3>
+					<div class="stat-card">
+						<div class="stat-label">Reservas ativas</div>
+						<div class="stat-value" id="stat-total-reservas">0</div>
+					</div>
+					<div class="entity-actions">
+						<a class="btn primary" href="#/reserva/cadastro">Efetuar Reserva</a>
+						<a class="btn" href="#/reserva/consulta">Consultar Reserva</a>
+					</div>
+				</div>
 			</div>
 		</section>
 
@@ -127,7 +170,6 @@
 				</div>
 				<div id="cadastro-messages" class="messages" aria-live="polite"></div>
 			</form>
-			<p class="note">Observação: Status padrão é <strong>Ativo</strong>. Não é possível alterar no cadastro.</p>
 		</section>
 
 		<section id="view-consulta" class="view hidden">
@@ -152,6 +194,14 @@
 						<option value="Ativo">Ativo</option>
 						<option value="Inativo">Inativo</option>
 						<option value="Suspenso">Suspenso</option>
+					</select>
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroPendencias">Pendências</label>
+					<select id="filtroPendencias">
+						<option value="">Todos</option>
+						<option value="com">Sim</option>
+						<option value="sem">Não</option>
 					</select>
 				</div>
 				<div class="form-actions">
@@ -280,7 +330,6 @@
 				</div>
 				<div id="editora-cadastro-messages" class="messages" aria-live="polite"></div>
 			</form>
-			<p class="note">Observação: Status padrão é <strong>Ativa</strong>. Não é possível alterar no cadastro.</p>
 		</section>
 
 		<section id="view-editora-consulta" class="view hidden">
@@ -438,7 +487,297 @@
 				</table>
 			</div>
 		</section>
-	</main>
+
+		<section id="view-emprestimo-cadastro" class="view hidden">
+			<h2>Efetuar Empréstimo</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="emprestimo" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="emprestimo" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
+			<form id="form-emprestimo-cadastro" novalidate>
+				<div class="form-row">
+					<label for="emprestimoAluno">Identificador do Aluno *</label>
+					<select id="emprestimoAluno" required>
+						<option value="">Selecione um aluno ativo</option>
+					</select>
+					<small class="hint">Somente alunos com status Ativo e sem pendências aparecem nesta lista.</small>
+				</div>
+				<div class="form-row">
+					<label for="emprestimoLivro">Identificador do Livro *</label>
+					<select id="emprestimoLivro" required>
+						<option value="">Selecione um livro com exemplar disponível</option>
+					</select>
+					<small class="hint">O sistema verifica reservas ativas e disponibilidade em tempo real.</small>
+				</div>
+				<input type="hidden" id="emprestimoData">
+				<input type="hidden" id="emprestimoStatus" value="Ativo">
+				<div class="form-row">
+					<label for="emprestimoDataPrevista">Data de Devolução Prevista *</label>
+					<input type="date" id="emprestimoDataPrevista" required>
+					<small class="hint">Sugestão automática de 7 dias. Pode ser ajustada.</small>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Registrar Empréstimo</button>
+					<button type="reset" class="btn" id="btnEmprestimoReset">Limpar</button>
+				</div>
+				<div id="emprestimo-cadastro-messages" class="messages" aria-live="polite"></div>
+			</form>
+			<p class="note">Limite máximo de 3 empréstimos ativos por aluno. Empréstimos atrasados bloqueiam novos registros.</p>
+		</section>
+
+		<section id="view-emprestimo-consulta" class="view hidden">
+			<h2>Consulta de Empréstimos</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="emprestimo" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="emprestimo" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
+			<form id="form-emprestimo-filtro" class="filters">
+				<div class="form-row-filters">
+					<label for="filtroEmprestimoAluno">Aluno (Nome ou Matrícula)</label>
+					<input type="text" id="filtroEmprestimoAluno" placeholder="Ex.: Maria ou 2025" maxlength="150">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroEmprestimoLivro">Livro (Título ou ISBN)</label>
+					<input type="text" id="filtroEmprestimoLivro" placeholder="Ex.: Dom Casmurro" maxlength="150">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroEmprestimoStatus">Status</label>
+					<select id="filtroEmprestimoStatus">
+						<option value="">Todos</option>
+						<option value="Ativo">Ativo</option>
+						<option value="Devolvido">Devolvido</option>
+						<option value="Atrasado">Atrasado</option>
+						<option value="Perdido">Perdido</option>
+					</select>
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroEmprestimoDataPrevista">Data de Devolução Prevista</label>
+					<input type="date" id="filtroEmprestimoDataPrevista">
+				</div>
+				<div class="form-row-filters checkbox">
+					<label class="checkbox-inline">
+						<input type="checkbox" id="filtroEmprestimoAtrasado">
+						Mostrar apenas empréstimos atrasados
+					</label>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Filtrar</button>
+					<button type="button" id="btnEmprestimoLimparFiltros" class="btn">Limpar</button>
+				</div>
+			</form>
+			<div id="emprestimo-lista-container">
+				<table class="table" id="tabela-emprestimos">
+					<thead>
+						<tr>
+							<th>Aluno</th>
+							<th>Livro</th>
+							<th>Data de Empréstimo</th>
+							<th>Devolução Prevista</th>
+							<th>Status</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody id="tbody-emprestimos">
+						<tr><td colspan="6" class="empty">Nenhum empréstimo encontrado.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section id="view-reserva-cadastro" class="view hidden">
+			<h2>Efetuar Reserva</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="reserva" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="reserva" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
+			<form id="form-reserva-cadastro" novalidate>
+				<div class="form-row">
+					<label for="reservaAluno">Identificador do Aluno *</label>
+					<select id="reservaAluno" required>
+						<option value="">Selecione um aluno ativo</option>
+					</select>
+					<small class="hint">Limitado a 3 reservas ativas por aluno.</small>
+				</div>
+				<div class="form-row">
+					<label for="reservaLivro">Identificador do Livro *</label>
+					<select id="reservaLivro" required>
+						<option value="">Selecione um livro com disponibilidade</option>
+					</select>
+					<small class="hint">O sistema respeita reservas já existentes e disponibilidade de exemplares.</small>
+				</div>
+				<input type="hidden" id="reservaData">
+				<input type="hidden" id="reservaStatus" value="Ativa">
+				<div class="form-row">
+					<label for="reservaDataExpiracao">Data de Expiração *</label>
+					<input type="date" id="reservaDataExpiracao" required>
+					<small class="hint">Sugestão automática de 5 dias. Pode ser ajustada.</small>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Registrar Reserva</button>
+					<button type="reset" class="btn" id="btnReservaReset">Limpar</button>
+				</div>
+				<div id="reserva-cadastro-messages" class="messages" aria-live="polite"></div>
+			</form>
+			<p class="note">Não é possível criar reservas duplicadas (mesmo aluno e livro) com status Ativa.</p>
+		</section>
+
+		<section id="view-reserva-consulta" class="view hidden">
+			<h2>Consulta de Reservas</h2>
+			<div class="history-actions">
+				<button type="button" class="btn" data-history-entity="reserva" data-history-type="edit">Histórico de Edições</button>
+				<button type="button" class="btn" data-history-entity="reserva" data-history-type="delete">Histórico de Exclusões</button>
+			</div>
+			<form id="form-reserva-filtro" class="filters">
+				<div class="form-row-filters">
+					<label for="filtroReservaAluno">Aluno (Nome ou Matrícula)</label>
+					<input type="text" id="filtroReservaAluno" placeholder="Ex.: João ou 1001" maxlength="150">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroReservaLivro">Livro (Título ou ISBN)</label>
+					<input type="text" id="filtroReservaLivro" placeholder="Ex.: Sapiens" maxlength="150">
+				</div>
+				<div class="form-row-filters">
+					<label for="filtroReservaStatus">Status</label>
+					<select id="filtroReservaStatus">
+						<option value="">Todos</option>
+						<option value="Ativa">Ativa</option>
+						<option value="Cancelada">Cancelada</option>
+						<option value="Expirada">Expirada</option>
+						<option value="Concluída">Concluída</option>
+					</select>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Filtrar</button>
+					<button type="button" id="btnReservaLimparFiltros" class="btn">Limpar</button>
+				</div>
+			</form>
+			<div id="reserva-lista-container">
+				<table class="table" id="tabela-reservas">
+					<thead>
+						<tr>
+							<th>Aluno</th>
+							<th>Livro</th>
+							<th>Data da Reserva</th>
+							<th>Expiração</th>
+							<th>Status</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody id="tbody-reservas">
+						<tr><td colspan="6" class="empty">Nenhuma reserva encontrada.</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section id="view-relatorios" class="view hidden">
+			<div class="view-header">
+				<div>
+					<h2>Relatórios de Gêneros Emprestados</h2>
+					<p class="note">Filtre por período e gênero para visualizar gráficos e detalhes agrupados.</p>
+				</div>
+				<button type="button" class="btn" id="btnRelatorioHistorico">Histórico de Emissões</button>
+			</div>
+			<form id="form-relatorio-generos" class="relatorio-form" novalidate>
+				<div class="grid">
+					<div class="form-row">
+						<label for="relatorioDataInicio">Data inicial *</label>
+						<input type="date" id="relatorioDataInicio" required>
+					</div>
+					<div class="form-row">
+						<label for="relatorioDataFim">Data final *</label>
+						<input type="date" id="relatorioDataFim" required>
+					</div>
+					<div class="form-row relatorio-generos">
+						<label for="relatorioGeneros">Gênero(s)</label>
+						<select id="relatorioGeneros" multiple size="6"></select>
+						<div class="selected-chips" id="relatorioGenerosChips" data-empty="Todos os gêneros"></div>
+						<small class="hint">Selecione um ou mais gêneros. Por padrão considera todos.</small>
+					</div>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Emitir Relatórios</button>
+					<button type="reset" class="btn ghost">Limpar</button>
+				</div>
+			</form>
+			<div id="relatorio-messages" class="messages" aria-live="polite"></div>
+			<div id="relatorio-result" class="relatorio-card hidden">
+				<div class="relatorio-summary">
+					<div class="relatorio-chart">
+						<h3 id="relatorio-pie-title">Gêneros Mais Emprestados (Percentual)</h3>
+						<canvas id="relatorioPieChart" aria-label="Gráfico de pizza de gêneros"></canvas>
+					</div>
+					<div class="relatorio-chart">
+						<h3 id="relatorio-bar-title">Gêneros Mais Emprestados (Números Absolutos)</h3>
+						<canvas id="relatorioBarChart" aria-label="Gráfico de barras de gêneros"></canvas>
+					</div>
+				</div>
+				<div id="relatorio-detalhes" class="relatorio-detalhes"></div>
+			</div>
+			<div id="relatorio-historico" class="relatorio-history hidden">
+				<h3>Histórico de emissões</h3>
+				<ul id="relatorio-historico-list">
+					<li class="empty">Nenhuma emissão registrada.</li>
+				</ul>
+			</div>
+		</section>
+
+		<section id="view-relatorios-faixa-etaria" class="view hidden">
+			<div class="view-header">
+				<div>
+					<h2>Relatórios de Faixa Etária X Empréstimo</h2>
+					<p class="note">Filtre por período e faixa etária para visualizar gráficos e detalhes agrupados.</p>
+				</div>
+				<button type="button" class="btn" id="btnRelatorioFaixaEtariaHistorico">Histórico de Emissões</button>
+			</div>
+			<form id="form-relatorio-faixa-etaria" class="relatorio-form" novalidate>
+				<div class="grid">
+					<div class="form-row">
+						<label for="relatorioFaixaEtariaDataInicio">Data inicial *</label>
+						<input type="date" id="relatorioFaixaEtariaDataInicio" required>
+					</div>
+					<div class="form-row">
+						<label for="relatorioFaixaEtariaDataFim">Data final *</label>
+						<input type="date" id="relatorioFaixaEtariaDataFim" required>
+					</div>
+					<div class="form-row">
+						<label for="relatorioFaixaEtaria">Faixa etária</label>
+						<select id="relatorioFaixaEtaria">
+							<option value="">Todas as faixas etárias</option>
+							<option value="0-5">0 - 5</option>
+							<option value="6-11">6 - 11</option>
+							<option value="12-14">12 - 14</option>
+							<option value="15-17">15 - 17</option>
+							<option value="18+">18+</option>
+						</select>
+						<small class="hint">Selecione uma faixa etária. Por padrão considera todas.</small>
+					</div>
+				</div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Emitir Relatório</button>
+					<button type="reset" class="btn ghost">Limpar</button>
+				</div>
+			</form>
+			<div id="relatorio-faixa-etaria-messages" class="messages" aria-live="polite"></div>
+			<div id="relatorio-faixa-etaria-result" class="relatorio-card hidden">
+				<div class="relatorio-summary">
+					<div class="relatorio-chart">
+						<h3 id="relatorio-faixa-etaria-bar-title">Faixa Etária X Empréstimo</h3>
+						<canvas id="relatorioFaixaEtariaBarChart" aria-label="Gráfico de barras de faixa etária"></canvas>
+					</div>
+				</div>
+				<div id="relatorio-faixa-etaria-detalhes" class="relatorio-detalhes"></div>
+			</div>
+			<div id="relatorio-faixa-etaria-historico" class="relatorio-history hidden">
+				<h3>Histórico de emissões</h3>
+				<ul id="relatorio-faixa-etaria-historico-list">
+					<li class="empty">Nenhuma emissão registrada.</li>
+				</ul>
+			</div>
+		</section>
+			</main>
+		</div>
+	</div>
 
 	<!-- Modal de Edição de Aluno -->
 	<div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -609,6 +948,96 @@
 		</div>
 	</div>
 
+	<!-- Modal de Edição de Empréstimo -->
+	<div id="modal-emprestimo-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-emprestimo-title">
+		<div class="modal">
+			<h3 id="modal-emprestimo-title">Alterar Empréstimo</h3>
+			<form id="form-emprestimo-edicao" novalidate>
+				<input type="hidden" id="edit-emprestimo-id">
+				<div class="form-row">
+					<label>Aluno</label>
+					<input type="text" id="edit-emprestimo-aluno" readonly>
+					<small class="hint">Não pode ser alterado.</small>
+				</div>
+				<div class="form-row">
+					<label>Livro</label>
+					<input type="text" id="edit-emprestimo-livro" readonly>
+					<small class="hint">Não pode ser alterado.</small>
+				</div>
+				<div class="grid">
+					<div class="form-row">
+						<label>Data de Empréstimo</label>
+						<input type="text" id="edit-emprestimo-data" readonly>
+						<small class="hint">Não pode ser alterada.</small>
+					</div>
+					<div class="form-row">
+						<label for="edit-emprestimo-prevista">Data de Devolução Prevista *</label>
+						<input type="date" id="edit-emprestimo-prevista" required>
+					</div>
+				</div>
+				<div class="form-row">
+					<label for="edit-emprestimo-status">Status *</label>
+					<select id="edit-emprestimo-status" required>
+						<option value="Ativo">Ativo</option>
+						<option value="Devolvido">Devolvido</option>
+						<option value="Atrasado">Atrasado</option>
+						<option value="Perdido">Perdido</option>
+					</select>
+				</div>
+				<div id="emprestimo-edicao-messages" class="messages" aria-live="polite"></div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Salvar Alterações</button>
+					<button type="button" id="btnCancelarEmprestimoEdicao" class="btn">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Modal de Edição de Reserva -->
+	<div id="modal-reserva-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-reserva-title">
+		<div class="modal">
+			<h3 id="modal-reserva-title">Alterar Reserva</h3>
+			<form id="form-reserva-edicao" novalidate>
+				<input type="hidden" id="edit-reserva-id">
+				<div class="form-row">
+					<label>Aluno</label>
+					<input type="text" id="edit-reserva-aluno" readonly>
+					<small class="hint">Não pode ser alterado.</small>
+				</div>
+				<div class="form-row">
+					<label>Livro</label>
+					<input type="text" id="edit-reserva-livro" readonly>
+					<small class="hint">Não pode ser alterado.</small>
+				</div>
+				<div class="grid">
+					<div class="form-row">
+						<label>Data da Reserva</label>
+						<input type="text" id="edit-reserva-data" readonly>
+						<small class="hint">Não pode ser alterada.</small>
+					</div>
+					<div class="form-row">
+						<label for="edit-reserva-expiracao">Data de Expiração *</label>
+						<input type="date" id="edit-reserva-expiracao" required>
+					</div>
+				</div>
+				<div class="form-row">
+					<label for="edit-reserva-status">Status *</label>
+					<select id="edit-reserva-status" required>
+						<option value="Ativa">Ativa</option>
+						<option value="Cancelada">Cancelada</option>
+						<option value="Expirada">Expirada</option>
+						<option value="Concluída">Concluída</option>
+					</select>
+				</div>
+				<div id="reserva-edicao-messages" class="messages" aria-live="polite"></div>
+				<div class="form-actions">
+					<button type="submit" class="btn primary">Salvar Alterações</button>
+					<button type="button" id="btnCancelarReservaEdicao" class="btn">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
 	<!-- Modal de Histórico -->
 	<div id="history-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="history-title">
 		<div class="modal history-modal">
@@ -621,6 +1050,7 @@
 			</div>
 		</div>
 	</div>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" integrity="sha384-Sse/HDqcypGpyTDpvZOJNnG0TT3feGQUkF9H+mnRvic+LjR+K1NhTt8f51KIQ3v3" crossorigin="anonymous"></script>
 	<script src="app.js"></script>
 </body>
 </html>
