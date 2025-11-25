@@ -2894,7 +2894,7 @@ function renderTabelaEmprestimos() {
 			<td>${escapeHtml(emprestimo.status)}</td>
 			<td>
 				<div class="actions">
-					<button id="edit-emprestimo" class="btn" data-action="editar-emprestimo" data-id="${emprestimo.id}">Editar</button>
+					<button id="test-selenium-edit-loan" class="btn" data-action="editar-emprestimo" data-id="${emprestimo.id}">Editar</button>
 					<button class="btn danger" data-action="excluir-emprestimo" data-id="${emprestimo.id}">Excluir</button>
 				</div>
 			</td>
@@ -3206,7 +3206,7 @@ function renderTabelaReservas() {
 			<td>${escapeHtml(reserva.status)}</td>
 			<td>
 				<div class="actions">
-					<button id="edit-reserva" class="btn" data-action="editar-reserva" data-id="${reserva.id}">Editar</button>
+					<button id="test-selenium-edit-reservation" class="btn" data-action="editar-reserva" data-id="${reserva.id}">Editar</button>
 					<button class="btn danger" data-action="excluir-reserva" data-id="${reserva.id}">Excluir</button>
 				</div>
 			</td>
