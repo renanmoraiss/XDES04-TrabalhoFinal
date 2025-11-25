@@ -3861,12 +3861,22 @@ function formatFaixaEtariaLabel(faixa) {
 	return labels[faixa] || faixa;
 }
 
+function resolveFaixasEtariasFiltro(filtros) {
+	if (!filtros) return [];
+	const valores = Array.isArray(filtros.faixasEtarias) && filtros.faixasEtarias.length
+		? filtros.faixasEtarias
+		: (filtros.faixaEtaria ? [filtros.faixaEtaria] : []);
+	return valores
+		.map(value => (value || '').trim())
+		.filter(Boolean);
+}
+
 function gerarRelatorioFaixaEtaria(filtros) {
 	const alunosMap = new Map(loadAlunos().map(a => [a.id, a]));
 	const emprestimos = refreshEmprestimoAutomaticStatuses();
 	const inicio = filtros.dataInicio;
 	const fim = filtros.dataFim;
-	const faixaEtariaFiltro = filtros.faixaEtaria || '';
+	const faixasEtariaFiltro = resolveFaixasEtariasFiltro(filtros);
 	const grupos = new Map();
 	let total = 0;
 
@@ -3886,7 +3896,7 @@ function gerarRelatorioFaixaEtaria(filtros) {
 		const faixaEtaria = determinarFaixaEtaria(idade);
 		if (!faixaEtaria) continue;
 		
-		if (faixaEtariaFiltro && faixaEtaria !== faixaEtariaFiltro) continue;
+		if (faixasEtariaFiltro.length && !faixasEtariaFiltro.includes(faixaEtaria)) continue;
 		
 		const grupo = grupos.get(faixaEtaria);
 		grupo.total += 1;
@@ -4143,7 +4153,10 @@ function renderRelatorioFaixaEtariaHistory() {
 	for (const entry of [...entries].reverse()) {
 		const li = document.createElement('li');
 		const periodo = entry.filtros?.periodo || '';
-		const faixaEtaria = entry.filtros?.faixaEtaria ? formatFaixaEtariaLabel(entry.filtros.faixaEtaria) : 'Todas';
+		const faixasSelecionadas = resolveFaixasEtariasFiltro(entry.filtros);
+		const faixaEtaria = faixasSelecionadas.length
+			? faixasSelecionadas.map(formatFaixaEtariaLabel).join(', ')
+			: 'Todas';
 		li.innerHTML = `<strong>${formatDateTimeDisplay(entry.dataHora)}</strong> — ${entry.usuario || 'Bibliotecário'}<br>Período: ${periodo || 'não informado'}<br>Faixa etária: ${faixaEtaria}<br>Total: ${entry.total || 0}`;
 		list.appendChild(li);
 	}
@@ -4153,13 +4166,19 @@ function setupRelatorioFaixaEtaria() {
 	const form = document.getElementById('form-relatorio-faixa-etaria');
 	const btnHistorico = document.getElementById('btnRelatorioFaixaEtariaHistorico');
 	const historicoBox = document.getElementById('relatorio-faixa-etaria-historico');
-	if (!form) return;
+	const faixaSelect = document.getElementById('relatorioFaixaEtaria');
+	if (!form || !faixaSelect) return;
+
+	for (const option of Array.from(faixaSelect.options || [])) {
+		option.selected = false;
+	}
+	initSelectedChips('relatorioFaixaEtaria', 'relatorioFaixaEtariaChips');
 
 	form.addEventListener('submit', (e) => {
 		e.preventDefault();
 		const dataInicio = (form.relatorioFaixaEtariaDataInicio.value || '').trim();
 		const dataFim = (form.relatorioFaixaEtariaDataFim.value || '').trim();
-		const faixaEtaria = (form.relatorioFaixaEtaria.value || '').trim();
+		const faixasEtariasSelecionadas = getSelectedValues(faixaSelect);
 		const messages = document.getElementById('relatorio-faixa-etaria-messages');
 		if (!dataInicio || !dataFim) {
 			showMessage(messages, 'Informe a data inicial e final para emitir o relatório.', 'error');
@@ -4172,7 +4191,7 @@ function setupRelatorioFaixaEtaria() {
 		const filtros = {
 			dataInicio,
 			dataFim,
-			faixaEtaria,
+			faixasEtarias: faixasEtariasSelecionadas,
 			periodo: `${formatDateToDisplay(dataInicio)} até ${formatDateToDisplay(dataFim)}`
 		};
 		const resultado = gerarRelatorioFaixaEtaria(filtros);
@@ -4189,6 +4208,10 @@ function setupRelatorioFaixaEtaria() {
 
 	form.addEventListener('reset', () => {
 		setTimeout(() => {
+			for (const option of Array.from(faixaSelect.options || [])) {
+				option.selected = false;
+			}
+			refreshSelectChips(faixaSelect);
 			renderRelatorioFaixaEtariaVazio();
 			showMessage(document.getElementById('relatorio-faixa-etaria-messages'), '', 'success');
 		}, 0);

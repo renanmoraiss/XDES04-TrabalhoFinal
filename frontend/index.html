@@ -740,17 +740,17 @@
 						<label for="relatorioFaixaEtariaDataFim">Data final *</label>
 						<input type="date" id="relatorioFaixaEtariaDataFim" required>
 					</div>
-					<div class="form-row">
+					<div class="form-row relatorio-faixa-etaria">
 						<label for="relatorioFaixaEtaria">Faixa etária</label>
-						<select id="relatorioFaixaEtaria">
-							<option value="">Todas as faixas etárias</option>
+						<select id="relatorioFaixaEtaria" multiple size="5">
 							<option value="0-5">0 - 5</option>
 							<option value="6-11">6 - 11</option>
 							<option value="12-14">12 - 14</option>
 							<option value="15-17">15 - 17</option>
 							<option value="18+">18+</option>
 						</select>
-						<small class="hint">Selecione uma faixa etária. Por padrão considera todas.</small>
+						<div class="selected-chips" id="relatorioFaixaEtariaChips" data-empty="Todas as faixas etárias"></div>
+						<small class="hint">Selecione uma ou mais faixas etárias. Por padrão considera todas.</small>
 					</div>
 				</div>
 				<div class="form-actions">
