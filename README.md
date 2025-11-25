@@ -11,6 +11,7 @@
 ###
 
 <p align="left">Cronograma (Trello): https://l1nq.com/KiAiv</p>
+<p align="left">Documento de Requisitos (DRE): https://encurtador.com.br/shGu</p>
 
 ###
 
