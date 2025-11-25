@@ -165,7 +165,7 @@
 					<input type="date" id="dataNascimento" name="dataNascimento" required max="2025-12-31">
 				</div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Cadastrar</button>
+					<button id="submit-aluno" type="submit" class="btn primary">Cadastrar</button>
 					<button type="reset" class="btn">Limpar</button>
 				</div>
 				<div id="cadastro-messages" class="messages" aria-live="polite"></div>
@@ -259,7 +259,7 @@
 					<textarea class="resumo-autor-placeholder" id="autorBiografia" rows="4" placeholder="Resumo biográfico" maxlength="1000"></textarea>
 				</div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Cadastrar</button>
+					<button id="submit-autor" type="submit" class="btn primary">Cadastrar</button>
 					<button type="reset" class="btn">Limpar</button>
 				</div>
 				<div id="autor-cadastro-messages" class="messages" aria-live="polite"></div>
@@ -325,7 +325,7 @@
 					<input type="text" id="editoraEndereco" name="editoraEndereco" placeholder="Ex.: Rua das Flores, 123" maxlength="200">
 				</div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Cadastrar</button>
+					<button id="submit-editora" type="submit" class="btn primary">Cadastrar</button>
 					<button type="reset" class="btn">Limpar</button>
 				</div>
 				<div id="editora-cadastro-messages" class="messages" aria-live="polite"></div>
@@ -428,7 +428,7 @@
 					</div>
 				</div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Cadastrar</button>
+					<button id="submit-livro" type="submit" class="btn primary">Cadastrar</button>
 					<button type="reset" class="btn">Limpar</button>
 				</div>
 				<div id="livro-cadastro-messages" class="messages" aria-live="polite"></div>
@@ -517,7 +517,7 @@
 					<small class="hint">Sugestão automática de 7 dias. Pode ser ajustada.</small>
 				</div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Registrar Empréstimo</button>
+					<button id="submit-emprestimo" type="submit" class="btn primary">Registrar Empréstimo</button>
 					<button type="reset" class="btn" id="btnEmprestimoReset">Limpar</button>
 				</div>
 				<div id="emprestimo-cadastro-messages" class="messages" aria-live="polite"></div>
@@ -613,7 +613,7 @@
 					<small class="hint">Sugestão automática de 5 dias. Pode ser ajustada.</small>
 				</div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Registrar Reserva</button>
+					<button id="submit-reserva" type="submit" class="btn primary">Registrar Reserva</button>
 					<button type="reset" class="btn" id="btnReservaReset">Limpar</button>
 				</div>
 				<div id="reserva-cadastro-messages" class="messages" aria-live="polite"></div>
@@ -696,7 +696,7 @@
 					</div>
 				</div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Emitir Relatórios</button>
+					<button id="exibir-relatorio" type="submit" class="btn primary">Emitir Relatórios</button>
 					<button type="reset" class="btn ghost">Limpar</button>
 				</div>
 			</form>
@@ -740,21 +740,21 @@
 						<label for="relatorioFaixaEtariaDataFim">Data final *</label>
 						<input type="date" id="relatorioFaixaEtariaDataFim" required>
 					</div>
-					<div class="form-row">
+					<div class="form-row relatorio-faixa-etaria">
 						<label for="relatorioFaixaEtaria">Faixa etária</label>
-						<select id="relatorioFaixaEtaria">
-							<option value="">Todas as faixas etárias</option>
+						<select id="relatorioFaixaEtaria" multiple size="5">
 							<option value="0-5">0 - 5</option>
 							<option value="6-11">6 - 11</option>
 							<option value="12-14">12 - 14</option>
 							<option value="15-17">15 - 17</option>
 							<option value="18+">18+</option>
 						</select>
-						<small class="hint">Selecione uma faixa etária. Por padrão considera todas.</small>
+						<div class="selected-chips" id="relatorioFaixaEtariaChips" data-empty="Todas as faixas etárias"></div>
+						<small class="hint">Selecione uma ou mais faixas etárias. Por padrão considera todas.</small>
 					</div>
 				</div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Emitir Relatório</button>
+					<button id="emitir-relatorio" type="submit" class="btn primary">Emitir Relatório</button>
 					<button type="reset" class="btn ghost">Limpar</button>
 				</div>
 			</form>
@@ -986,7 +986,7 @@
 				</div>
 				<div id="emprestimo-edicao-messages" class="messages" aria-live="polite"></div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Salvar Alterações</button>
+					<button id="salvar-emprestimo" type="submit" class="btn primary">Salvar Alterações</button>
 					<button type="button" id="btnCancelarEmprestimoEdicao" class="btn">Cancelar</button>
 				</div>
 			</form>
@@ -1031,7 +1031,7 @@
 				</div>
 				<div id="reserva-edicao-messages" class="messages" aria-live="polite"></div>
 				<div class="form-actions">
-					<button type="submit" class="btn primary">Salvar Alterações</button>
+					<button id="salvar-reserva" type="submit" class="btn primary">Salvar Alterações</button>
 					<button type="button" id="btnCancelarReservaEdicao" class="btn">Cancelar</button>
 				</div>
 			</form>
